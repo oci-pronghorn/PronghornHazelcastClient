@@ -1,0 +1,2972 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+
+<!-- 
+
+	This file documents all the possible requests into the API.
+	The code generator will use this to write all the interface classes
+
+	The client message may not all be exposed since many of these requests are internal by nature.
+	
+	The PartitionHash appears as a member to most messages but it will not be exponsed. 
+	This provides a storage location for the hash when it is computed and before it is ready to be sent.
+
+-->		
+				
+	<!-- start of Client Messages -->
+	<template name="Authentication" id="0x2"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="UserName" id="0x1fff01" />
+		<string name="Password" id="0x1fff02" />
+		<string name="UUID" presence="optional" id="0x1fff03" />
+		<string name="OwnerUUID" presence="optional" id="0x1fff04" />
+		<uInt32 name="isOwnerConnection" presence="optional" id="0x1fff05"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+	</template>
+
+	<template name="Authentication" id="0x3"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<byteArray name="Credentials" id="0x1fff06" />
+		<string name="UUID" presence="optional" id="0x1fff03" />
+		<string name="OwnerUUID" presence="optional" id="0x1fff04" />
+		<uInt32 name="isOwnerConnection" presence="optional" id="0x1fff05"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+	</template>
+
+	<template name="MembershipListener" id="0x4"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="CreateProxy" id="0x5"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<string name="Name" id="0x1fff07" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="ServiceName" id="0x1fff08" />
+	</template>
+
+	<template name="DestroyProxy" id="0x6"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x1fff07" />
+		<string name="ServiceName" id="0x1fff08" />
+	</template>
+
+
+	<template name="GetPartitions" id="0x8"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="RemoveAllListeners" id="0x9"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="AddPartitionLost" id="0xA"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="RemovePartitionLost" id="0xB"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="RegistrationId" id="0x1fff09" />
+	</template>
+
+
+	<template name="GetDistributedObject" id="0xC"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="AddDistributedObject" id="0xD"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="AddDistributedObject" id="0xF"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+	<!-- end of Client Messages -->
+
+
+
+	<!-- start of Atomic Long Messages -->
+	<template name="Apply" id="0x0a01"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<byteArray name="Function" id="0x0aff02" />
+	</template>
+
+	<template name="Alter" id="0x0a02"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<byteArray name="Function" id="0x0aff02" />
+	</template>
+
+	<template name="AlterAndGet" id="0x0a03"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<byteArray name="Function" id="0x0aff02" />
+	</template>
+
+	<template name="CompareAndSet" id="0x0a04"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<int64 name="Expected" id="0x0aff03" />
+		<int64 name="NewValue" id="0x0aff04" /> <!--Updated -->
+	</template>
+
+	<template name="DecrementAndGet" id="0x0a05"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+	</template>
+
+	<template name="Get" id="0x0a06"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<!-- name="PartitionHash" id="0x1fffef" -->
+
+		<string name="Name" id="0x0aff01" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+	</template>
+
+	<template name="GetAndAdd" id="0x0a07"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<int64 name="Delta" id="0x0aff05" />
+	</template>
+
+	<template name="GetAndSet" id="0x0a08"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<int64 name="NewValue" id="0x0aff04" />
+	</template>
+
+	<template name="IncrementAndGet" id="0x0a0b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+	</template>
+
+	<template name="GetAndIncrement" id="0x0a0c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+	</template>
+
+	<template name="Set" id="0x0a0d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0aff01" />
+		<int64 name="NewValue" id="0x0aff04" />
+	</template>
+	<!-- end of Atomic Long Messages -->
+
+	<!-- start of Atomic Reference Messages -->
+	<template name="Apply" id="0x0b01"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="Function" id="0x0bff02" />
+	</template>
+
+	<template name="Alter" id="0x0b02"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="Function" id="0x0bff02" />
+	</template>
+
+	<template name="AlterAndGet" id="0x0b03"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="Function" id="0x0bff02" />
+	</template>
+
+	<template name="GetAndAlter" id="0x0b04"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="Function" id="0x0bff02" />
+	</template>
+
+	<template name="Contains" id="0x0b05"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="Expected" id="0x0bff03" presence="optional" />
+	</template>
+
+	<template name="CompareAndSet" id="0x0b06"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="Expected" id="0x0bff03" presence="optional" />
+		<byteArray name="NewValue" id="0x0bff04" presence="optional" /> <!-- Updated -->
+
+	</template>
+
+	<template name="Get" id="0x0b08"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+
+	</template>
+
+	<template name="Set" id="0x0b09"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="NewValue" id="0x0bff04" presence="optional" />
+
+	</template>
+
+	<template name="Clear" id="0x0b0a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+
+	</template>
+
+	<template name="GetAndSet" id="0x0b0b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="NewValue" id="0x0bff04" presence="optional" />
+	</template>
+
+	<template name="SetAndGet" id="0x0b0c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+		<byteArray name="NewValue" id="0x0bff04" presence="optional" />
+
+	</template>
+
+	<template name="IsNull" id="0x0b0d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0bff01" />
+	</template>
+	<!-- end of Atomic Reference Messages -->
+
+
+	<!-- start of Cache Reference Messages -->
+	<template name="AddEntryListener" id="0x1501"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+	</template>
+
+	<template name="AddInvalidationListener" id="0x1502"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+	</template>
+
+	<template name="Clear" id="0x1503"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+	</template>
+
+	<template name="RemoveAllKeys" id="0x1504"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Keys" id="0x15ff03" />
+		<int name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="RemoveAll" id="0x1505"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<int name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="ContainsKey" id="0x1506"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+	</template>
+
+	<template name="CreateConfig" id="0x1507"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<byteArray name="CacheConfig" id="0x15ff05" />
+		<uInt32 name="createAlsoOnOthers" id="0x15ff06" presence="optional"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+	</template>
+
+	<template name="Destroy" id="0x1508"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+	</template>
+
+	<template name="EntryProcessor" id="0x1509"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="EntryProcessor" id="0x15ff07" />
+		<byteArray name="Arguments" id="0x15ff08" />
+		<uInt32 name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="GetAll" id="0x150a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="ExpiryPolicy" id="0x15ff09" presence="optional" />
+	</template>
+
+	<template name="GetAndRemove" id="0x150b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<uInt32 name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="GetAndReplace" id="0x150c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="ExpiryPolicy" id="0x15ff09" presence="optional" />
+		<uInt32 name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="GetConfig" id="0x150d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<string name="SimpleName" id="0x15ff10" />
+	</template>
+
+	<template name="Get" id="0x150e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="ExpiryPolicy" id="0x15ff09" presence="optional" />
+	</template>
+
+	<template name="Iterate" id="0x150f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<uInt32 name="PartitionId" id="0x15ff0a" />
+		<uInt32 name="TableIndex" id="0x15ff0b" />
+		<uInt32 name="Batch" id="0x15ff0c" />
+	</template>
+
+	<template name="ListenRegistration" id="0x1510"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="ListenerConfig" id="0x15ff0d" />
+		<uInt32 name="Register" presence="optional" id="0x15ff0e"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+		<string name="Hostname" id="0x15ff11" />
+		<uInt32 name="Port" id="0x15ff12" />
+	</template>
+
+	<template name="LoadAll" id="0x1511"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Keys" id="0x15ff03" />
+		<uInt32 name="ReplaceExistingValues" presence="optional" id="0x15ff0f"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+	</template>
+
+	<template name="ManagementConfig" id="0x1512"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<uInt32 name="IsStat" presence="optional" id="0x15ff13"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+		<uInt32 name="Enabled" presence="optional" id="0x15ff14"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+		<string name="Hostname" id="0x15ff11" />
+		<uInt32 name="Port" id="0x15ff12" />
+	</template>
+
+	<template name="PutIfAbsent" id="0x1513"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="Value" id="0x15ff15" />
+		<byteArray name="ExpiryPolicy" id="0x15ff09" presence="optional" />
+		<uInt32 name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="Put" id="0x1514"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="Value" id="0x15ff15" />
+		<byteArray name="ExpiryPolicy" id="0x15ff09" presence="optional" />
+		<uInt32 name="Get" presence="optional" id="0x15ff16"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+		<uInt32 name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="RemoveEntryListener" id="0x1515"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<string name="RegistrationId" id="0x15ff17" />
+	</template>
+
+	<template name="RemoveInvalidationListener" id="0x1516"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<string name="RegistrationId" id="0x15ff17" />
+	</template>
+
+	<template name="Remove" id="0x1517"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="CurrentValue" id="0x15ff1a" presence="optional" />
+		<int name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="Replace" id="0x1518"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+		<byteArray name="Key" id="0x15ff02" />
+		<byteArray name="CurrentValue" id="0x15ff1a" presence="optional" /> <!--Expected -->
+		<byteArray name="Value" id="0x15ff15" /> <!-- NewValue -->
+		<byteArray name="ExpiryPolicy" id="0x15ff09" presence="optional" />
+		<int name="CompletionId" id="0x15ff04" />
+	</template>
+
+	<template name="Size" id="0x1519"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x15ff01" />
+	</template>
+
+	<!-- end of Cache Reference Messages -->
+
+	<!-- start of Condition Reference Messages -->
+	<template name="Await" id="0x0801"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x08ff01" />
+		<uInt64 name="LockPasscode" id="0x08ff02" /> <!-- ThreadId -->
+		<uInt64 name="Timout" id="0x08ff03" />
+		<string name="LockName" id="0x08ff04" />
+	</template>
+
+	<template name="BeforeAwait" id="0x0802"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x08ff01" />
+		<uInt64 name="LockPasscode" id="0x08ff02" /> <!-- ThreadId -->
+		<string name="LockName" id="0x08ff04" />
+	</template>
+
+	<template name="Signal" id="0x0803"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x08ff01" />
+	</template>
+
+	<template name="SignalAll" id="0x0804"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x08ff01" />
+		<uInt64 name="LockPasscode" id="0x08ff02" /> <!-- ThreadId -->
+		<string name="LockName" id="0x08ff04" />
+	</template>
+	<!-- end of Condition Reference Messages -->
+
+
+	<!-- start of Countdown Latch Reference Messages -->
+	<template name="Await" id="0x0c01"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0cff01" />
+		<uInt64 name="Timeout" id="0x0cff02" />
+	</template>
+
+	<template name="Countdown" id="0x0c02"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0cff01" />
+	</template>
+
+	<template name="GetCount" id="0x0c03"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0cff01" />
+	</template>
+
+	<template name="TrySetCount" id="0x0c04"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x0cff01" />
+		<uInt32 name="TrySetCount" id="0x0cff03" />
+	</template>
+	<!-- end of Countdown Latch Reference Messages -->
+
+
+	<!-- start of Executor Service Reference Messages -->
+	<template name="Shutdown" id="0x0901"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x09ff01" />
+	</template>
+
+	<template name="IsShutdown" id="0x0902"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x09ff01" />
+	</template>
+
+	<template name="CancelOnPartition" id="0x0903"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="UUID" id="0x09ff02" />
+		<uInt32 name="PartitionId" id="0x09ff03" />
+	</template>
+
+	<template name="CancelOnAddress" id="0x0904"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="UUID" id="0x09ff02" />
+		<string name="Hostname" id="0x09ff04" />
+		<uInt32 name="Port" id="0x09ff05" />
+		<uInt32 name="Interrupt" presence="optional" id="0x09ff06"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+	</template>
+
+	<template name="SubmitToPartition" id="0x0905"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x09ff01" />
+		<string name="UUID" id="0x09ff02" />
+		<byteArray name="Callable" id="0x09ff07" />
+		<uInt32 name="PartitionId" id="0x09ff08" />
+	</template>
+
+	<template name="SubmitToAddress" id="0x0906"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x09ff01" />
+		<string name="UUID" id="0x09ff02" />
+		<byteArray name="Callable" id="0x09ff07" />
+		<string name="Hostname" id="0x09ff04" />
+		<uInt32 name="Port" id="0x09ff05" />
+	</template>
+	<!-- end of Executor Service Reference Messages -->
+
+
+	<!-- start of List Messages -->
+	<template name="Size" id="0x0501"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+	</template>
+
+	<template name="Contains" id="0x0502"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="Value" id="0x05ff02" />
+	</template>
+
+	<template name="ContainsAll" id="0x0503"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="ValueSet" id="0x05ff03" />
+	</template>
+
+	<template name="Add" id="0x0504"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="Value" id="0x05ff02" />
+	</template>
+
+	<template name="Remove" id="0x0505"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="Value" id="0x05ff02" />
+	</template>
+
+	<template name="AddAll" id="0x0506"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="Values" id="0x05ff04" />
+	</template>
+
+	<template name="CompareAndRemoveAll" id="0x0507"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="ValueSet" id="0x05ff03" />
+	</template>
+
+	<template name="CompareAndRetainAll" id="0x0508"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="ValueSet" id="0x05ff03" />
+	</template>
+
+	<template name="Clear" id="0x0509"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+	</template>
+
+	<template name="GetAll" id="0x050a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+	</template>
+
+	<template name="AddListener" id="0x050b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x05ff05"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+	</template>
+
+	<template name="RemoveListener" id="0x050c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<string name="RegistrationId" id="0x05ff06" />
+	</template>
+
+	<template name="IsEmpty" id="0x050d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+	</template>
+
+	<template name="AddAllWithIndex" id="0x050e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="Index" id="0x05ff07" />
+		<byteArray name="Values" id="0x05ff04" />
+	</template>
+
+	<template name="Get" id="0x050f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="Index" id="0x05ff07" />
+	</template>
+
+	<template name="Set" id="0x0510"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="Index" id="0x05ff07" />
+		<byteArray name="Value" id="0x05ff02" />
+	</template>
+
+	<template name="AddWithIndex" id="0x0511"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="Index" id="0x05ff07" />
+		<byteArray name="Value" id="0x05ff02" />
+	</template>
+
+	<template name="RemoveWithIndex" id="0x0512"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="Index" id="0x05ff07" />
+	</template>
+
+	<template name="LastIndexOf" id="0x0513"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="Value" id="0x05ff02" />
+	</template>
+
+	<template name="IndexOf" id="0x0514"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<byteArray name="Value" id="0x05ff02" />
+
+	</template>
+
+	<template name="Sub" id="0x0515"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="From" id="0x05ff08" />
+		<uInt32 name="To" id="0x05ff09" />
+
+	</template>
+
+	<template name="Iterator" id="0x0516"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x05ff01" />
+
+	</template>
+
+	<template name="ListIterator" id="0x0517"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x05ff01" />
+		<uInt32 name="Index" id="0x05ff07" />
+
+	</template>
+	<!-- end of List Messages -->
+
+	<!-- start of Lock Messages -->
+	<template name="IsLocked" id="0x0701"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+
+	</template>
+
+	<template name="IsLockedByCurrentThread" id="0x0702"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+		<uInt64 name="LockPasscode" id="0x07ff02" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="GetLockCount" id="0x0703"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+
+	</template>
+
+	<template name="GetRemainingLeaseTime" id="0x0704"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+
+	</template>
+
+	<template name="Lock" id="0x0705"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+		<uInt64 name="LeaseTime" id="0x07ff03" />
+		<uInt64 name="LockPasscode" id="0x07ff02" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Unlock" id="0x0706"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+		<uInt64 name="LockPasscode" id="0x07ff02" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ForceUnlock" id="0x0707"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+
+	</template>
+
+	<template name="TryLock" id="0x0708"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x07ff01" />
+		<uInt64 name="LeaseTime" id="0x07ff03" />
+		<uInt64 name="LockPasscode" id="0x07ff02" /> <!-- ThreadId -->
+
+	</template>
+
+	<!-- end of Lock Messages -->
+
+
+	<!-- start of Map Messages -->
+
+	<template name="Put" id="0x0101"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x01ff05" />
+
+	</template>
+
+	<template name="Get" id="0x0102"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Remove" id="0x0103"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Replace" id="0x0104"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ReplaceIfSame" id="0x0105"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="TestValue" id="0x01ff06" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="PutAsync" id="0x0106"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x01ff05" />
+
+	</template>
+
+	<template name="GetAsync" id="0x0107"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="RemoveAsync" id="0x0108"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ContainsKey" id="0x0109"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ContainsValue" id="0x010a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Value" id="0x01ff03" />
+
+	</template>
+
+	<template name="RemoveIfSame" id="0x010b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Delete" id="0x010c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Flush" id="0x010d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="TryRemove" id="0x010e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="Timeout" id="0x01ff07" />
+
+	</template>
+
+	<template name="TryPut" id="0x010f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="Timeout" id="0x01ff07" />
+
+	</template>
+
+	<template name="PutTransient" id="0x0110"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x01ff05" />
+
+	</template>
+
+	<template name="PutIfAbsent" id="0x0111"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x01ff05" />
+
+	</template>
+
+	<template name="Set" id="0x0112"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Value" id="0x01ff03" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x01ff05" />
+
+	</template>
+
+	<template name="Lock" id="0x0113"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x01ff05" />
+
+	</template>
+
+	<template name="TryLock" id="0x0114"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" />  <!-- ThreadId -->
+		<uInt64 name="Lease" id="0x01ff08" />
+		<uInt64 name="Timeout" id="0x01ff07" />
+
+	</template>
+
+	<template name="IsLocked" id="0x0115"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+
+	</template>
+
+	<template name="Unlock" id="0x0116"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="AddInterceptor" id="0x0117"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Interceptor" id="0x01ff09" />
+
+	</template>
+
+	<template name="RemoveInterceptor" id="0x0118"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<string name="ID" id="0x01ff0a" />
+
+	</template>
+
+	<template name="AddEntryListenerToKeyWithPredicate" id="0x0119"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x01ff0c"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="AddEntryListenerWithPredicate" id="0x011a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x01ff0c"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="AddEntryListenerToKey" id="0x011b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x01ff0c"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="AddEntryListener" id="0x011c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x01ff0c"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="AddNearCacheEntryListener" id="0x011d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x01ff0c"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="Remove Entry Listener" id="0x011e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<string name="RegistrationId" id="0x01ff0d" />
+
+	</template>
+
+
+	<template name="AddPartitionLostListener" id="0x011f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="RemovePartitionLostListener" id="0x0120"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<string name="RegistrationId" id="0x01ff0d" />
+
+	</template>
+
+
+	<template name="GetEntryView" id="0x0121"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Evict" id="0x0122"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+		<uInt64 name="LockPasscode" id="0x01ff04" /> <!-- ThreadId -->
+
+	</template>
+
+
+	<template name="EvictAll" id="0x0123"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="LoadAll" id="0x0124"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<uInt32 name="ReplaceExistingValues" presence="optional" id="0x01ff0e"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+
+	<template name="LoadGivenKeys" id="0x0125"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Keys" id="0x01ff0f" />
+		<uInt32 name="ReplaceExistingValues" presence="optional" id="0x01ff0e"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="Keyset" id="0x0126"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="GetAll" id="0x0127"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Keys" id="0x01ff0f" />
+
+	</template>
+
+	<template name="Values" id="0x0128"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="EntrySet" id="0x0129"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="KeySetWithPredicate" id="0x012a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+	<template name="MapValuesWithPredicate" id="0x012b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+	<template name="MapEntriesWithPredicate" id="0x012c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+	<template name="MapAddIndex" id="0x012d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<string name="Attribute" id="0x01ff10" />
+		<uInt32 name="Ordered" presence="optional" id="0x01ff11"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="Size" id="0x012e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="IsEmpty" id="0x012f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="PutAll" id="0x0130"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Entries" id="0x01ff12" />
+
+	</template>
+
+	<template name="Clear" id="0x0131"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+
+	</template>
+
+	<template name="ExecuteOnKey" id="0x0132"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="EntryProcessor" id="0x01ff13" />
+		<byteArray name="Key" id="0x01ff02" />
+
+	</template>
+
+	<template name="SubmitToKey" id="0x0133"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="EntryProcessor" id="0x01ff13" />
+		<byteArray name="Key" id="0x01ff02" />
+
+	</template>
+
+	<template name="ExecuteOnAllKeys" id="0x0134"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="EntryProcessor" id="0x01ff13" />
+
+	</template>
+
+	<template name="ExecuteWithPredicate" id="0x0135"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="EntryProcessor" id="0x01ff13" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+
+	<template name="ExecuteOnKeys" id="0x0136"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="EntryProcessor" id="0x01ff13" />
+		<byteArray name="Keys" id="0x01ff0f" />
+
+	</template>
+
+	<template name="ForceUnlock" id="0x0137"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Key" id="0x01ff02" />
+
+	</template>
+
+	<template name="KeySetWithPagingPredicate" id="0x0138"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+	<template name="ValuesWithPagingPredicate" id="0x0139"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+	<template name="EntriesWithPagingPredicate" id="0x013a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x01ff01" />
+		<byteArray name="Predicate" id="0x01ff0b" />
+
+	</template>
+
+	<!-- end of Map Messages -->
+
+	<!-- start of JobProcess (Map/Reduce) Messages -->
+
+	<template name="Cancel" id="0x0f01"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+
+	</template>
+
+	<template name="JobProcessInformation" id="0x0f02"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+
+	</template>
+
+	<template name="ForMap" id="0x0f03"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+		<byteArray name="Predicate" id="0x0fff03" presence="optional" />
+		<byteArray name="Mapper" id="0x0fff04" />
+		<byteArray name="CombinerFactory" id="0x0fff05" presence="optional" />
+		<byteArray name="ReducerFactory" id="0x0fff06" presence="optional" />
+		<string name="MapName" id="0x0fff07" />
+		<uInt32 name="ChunkSize" id="0x0fff0c" />
+		<byteArray name="Keys" id="0x0fff0d" presence="optional" />
+		<string name="TopologyChangedStrategy" id="0x0fff0e" presence="optional" />
+
+	</template>
+
+	<template name="ForList" id="0x0f04"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+		<byteArray name="Predicate" id="0x0fff03" presence="optional" />
+		<byteArray name="Mapper" id="0x0fff04" />
+		<byteArray name="CombinerFactory" id="0x0fff05" presence="optional" />
+		<byteArray name="ReducerFactory" id="0x0fff06" presence="optional" />
+		<string name="ListName" id="0x0fff08" />
+		<uInt32 name="ChunkSize" id="0x0fff0c" />
+		<byteArray name="Keys" id="0x0fff0d" presence="optional" />
+		<string name="TopologyChangedStrategy" id="0x0fff0e" presence="optional" />
+
+	</template>
+
+	<template name="ForSet" id="0x0f05"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+		<byteArray name="Predicate" id="0x0fff03" presence="optional" />
+		<byteArray name="Mapper" id="0x0fff04" />
+		<byteArray name="CombinerFactory" id="0x0fff05" presence="optional" />
+		<byteArray name="ReducerFactory" id="0x0fff06" presence="optional" />
+		<string name="SetName" id="0x0fff09" />
+		<uInt32 name="ChunkSize" id="0x0fff0c" />
+		<byteArray name="Keys" id="0x0fff0d" presence="optional" />
+		<string name="TopologyChangedStrategy" id="0x0fff0e" presence="optional" />
+
+	</template>
+
+	<template name="ForMultimap" id="0x0f06"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+		<byteArray name="Predicate" id="0x0fff03" presence="optional" />
+		<byteArray name="Mapper" id="0x0fff04" />
+		<byteArray name="CombinerFactory" id="0x0fff05" presence="optional" />
+		<byteArray name="ReducerFactory" id="0x0fff06" presence="optional" />
+		<string name="MultimapName" id="0x0fff0a" />
+		<uInt32 name="ChunkSize" id="0x0fff0c" />
+		<byteArray name="Keys" id="0x0fff0d" presence="optional" />
+		<string name="TopologyChangedStrategy" id="0x0fff0e" presence="optional" />
+
+	</template>
+
+	<template name="ForCustom" id="0x0f07"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0fff01" />
+		<string name="JobId" id="0x0fff02" />
+		<byteArray name="Predicate" id="0x0fff03" presence="optional" />
+		<byteArray name="Mapper" id="0x0fff04" />
+		<byteArray name="CombinerFactory" id="0x0fff05" presence="optional" />
+		<byteArray name="ReducerFactory" id="0x0fff06" presence="optional" />
+		<byteArray name="KeyValueSource" id="0x0fff0b" />
+		<uInt32 name="ChunkSize" id="0x0fff0c" />
+		<byteArray name="Keys" id="0x0fff0d" presence="optional" />
+		<string name="TopologyChangedStrategy" id="0x0fff0e" presence="optional" />
+
+	</template>
+
+	<!-- end of JobProcess Messages -->
+
+
+
+	<!-- start of MultiMap Reference Messages -->
+	<template name="Put" id="0x0201"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Get" id="0x0202"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Remove" id="0x0203"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Keyset" id="0x0204"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+
+	</template>
+
+	<template name="Values" id="0x0205"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+
+	</template>
+
+	<template name="Entryset" id="0x0206"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+
+	</template>
+
+	<template name="ContainsKey" id="0x0207"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+
+	</template>
+
+	<template name="ContainsValue" id="0x0208"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Value" id="0x02ff04" />
+
+	</template>
+
+	<template name="ContainsEntry" id="0x0209"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<byteArray name="Value" id="0x02ff04" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Size" id="0x020a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+
+	</template>
+
+	<template name="Clear" id="0x020b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+
+	</template>
+
+	<template name="Count" id="0x020c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="AddEntryListenerToKey" id="0x020d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x02ff05"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="AddEntryListener" id="0x020e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x02ff05"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="RemoveEntryListener" id="0x020f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<string name="RegistrationId" id="0x02ff06" />
+
+	</template>
+
+	<template name="Lock" id="0x0210"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+		<uInt64 name="TTL" id="0x02ff07" />
+
+	</template>
+
+	<template name="TryLock" id="0x0211"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+		<uInt64 name="Timeout" id="0x02ff08" />
+
+	</template>
+
+	<template name="IsLocked" id="0x0212"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+
+	</template>
+
+	<template name="Unlock" id="0x0213"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ForceUnlock" id="0x0214"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+
+	</template>
+
+	<template name="RemoveEntry" id="0x0215"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ValueCount" id="0x0216"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x02ff01" />
+		<byteArray name="Key" id="0x02ff02" />
+		<uInt64 name="LockPasscode" id="0x02ff03" /> <!-- ThreadId -->
+
+	</template>
+	<!-- end of MultiMap Reference Messages -->
+
+	<!-- start of Queue Reference Messages -->
+	<template name="Offer" id="0x0301"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="Put" id="0x0302"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="Size" id="0x0303"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="Remove" id="0x0304"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="Poll" id="0x0305"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<uInt64 name="TimeOutWait" id="0x03ff03" />
+
+	</template>
+
+	<template name="Take" id="0x0306"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="Peek" id="0x0307"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="Iterator" id="0x0308"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="DrainTo" id="0x0309"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="DrainToMaxSize" id="0x030a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<uInt32 name="MaxSize" id="0x03ff04" />
+
+	</template>
+
+	<template name="Contains" id="0x030b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="ContainsAll" id="0x030c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="CompareAndRemoveAll" id="0x030d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="CompareAndRetainAll" id="0x030e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="Clear" id="0x030f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="AddAll" id="0x0310"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<byteArray name="Data" id="0x03ff02" />
+
+	</template>
+
+	<template name="AddListener" id="0x0311"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x03ff05"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="RemoveListener" id="0x0312"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+		<string name="RegistrationId" id="0x03ff06" />
+
+	</template>
+
+	<template name="RemainingCapacity" id="0x0313"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+
+	<template name="IsEmpty" id="0x0314"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x03ff01" />
+
+	</template>
+	<!-- end of Queue Reference Messages -->
+
+	<!-- start of ReplicatedMap Messages -->
+	<template name="Put" id="0x0e01"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Key" id="0x0eff02" />
+		<byteArray name="Value" id="0x0eff03" />
+		<uInt64 name="TTL" id="0x0eff04" />
+
+	</template>
+
+	<template name="Size" id="0x0e02"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+
+	<template name="IsEmpty" id="0x0e03"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+
+	<template name="ContainsKey" id="0x0e04"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Key" id="0x0eff02" />
+
+	</template>
+
+	<template name="ContainsValue" id="0x0e05"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Value" id="0x0eff03" />
+
+	</template>
+
+	<template name="Get" id="0x0e06"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Key" id="0x0eff02" />
+
+	</template>
+
+	<template name="Remove" id="0x0e07"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Key" id="0x0eff02" />
+
+	</template>
+
+	<template name="PutAll" id="0x0e08"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Map" id="0x0eff05" />
+
+	</template>
+
+	<template name="Clear" id="0x0e09"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+
+	<template name="AddEntryListenerToKeyWithPredicate" id="0x0e0a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Key" id="0x0eff02" />
+		<byteArray name="Predicate" id="0x0eff06" />
+
+	</template>
+
+	<template name="AddEntryListenerWithPredicate" id="0x0e0b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Predicate" id="0x0eff06" />
+
+	</template>
+
+	<template name="AddEntryListenerToKey" id="0x0e0c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<byteArray name="Key" id="0x0eff02" />
+
+	</template>
+
+	<template name="AddEntryListener" id="0x0e0d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+
+	<template name="RemoveEntryListener" id="0x0e0e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+		<string name="RegistrationId" id="0x0eff07" />
+
+	</template>
+
+	<template name="Keyset" id="0x0e0f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+
+	<template name="Values" id="0x0e10"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+
+	<template name="Entryset" id="0x0e11"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0eff01" />
+
+	</template>
+	<!-- end of ReplicatedMap Messages -->
+
+	<!-- start of Semaphore Messages -->
+	<template name="Init" id="0x0d01"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+		<uInt32 name="Permits" id="0x0dff02" />
+
+	</template>
+	<template name="Acquire" id="0x0d02"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+		<uInt32 name="Permits" id="0x0dff02" />
+
+	</template>
+	<template name="AvailablePermits" id="0x0d03"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+
+	</template>
+	<template name="DrainPermits" id="0x0d04"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+
+	</template>
+	<template name="ReducePermits" id="0x0d05"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+		<uInt32 name="Reduction" id="0x0dff03" />
+
+	</template>
+	<template name="Release" id="0x0d06"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+		<uInt32 name="Permits" id="0x0dff02" />
+
+	</template>
+	<template name="TryAcquire" id="0x0d07"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x0dff01" />
+		<uInt32 name="Permits" id="0x0dff02" />
+		<uInt64 name="Timeout" id="0x0dff04" />
+
+	</template>
+	<!-- end of Semaphore Messages -->
+
+	<!-- start of Set Messages -->
+	<template name="Size" id="0x0601"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+
+	</template>
+	<template name="Contains" id="0x0602"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Value" id="0x06ff02" />
+
+	</template>
+	<template name="ContainsAll" id="0x0603"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Data" id="0x06ff03" />
+
+	</template>
+	<template name="Add" id="0x0604"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Value" id="0x06ff02" />
+
+	</template>
+	<template name="Remove" id="0x0605"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Value" id="0x06ff02" />
+
+	</template>
+	<template name="AddAll" id="0x0606"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Value" id="0x06ff02" />
+
+	</template>
+	<template name="CompareAndRemoveAll" id="0x0607"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Data" id="0x06ff03" />
+
+	</template>
+	<template name="CompareAndRetainAll" id="0x0608"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<byteArray name="Data" id="0x06ff03" />
+
+	</template>
+	<template name="Clear" id="0x0609"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+
+	</template>
+	<template name="GetAll" id="0x060a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+
+	</template>
+	<template name="AddListener" id="0x060b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<uInt32 name="IncludeValue" presence="optional" id="0x06ff04"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+	<template name="RemoveListener" id="0x060c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+		<string name="RegistrationId" id="0x06ff05" />
+
+	</template>
+	<template name="IsEmpty" id="0x060d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+
+	</template>
+	<!-- end of Set Messages -->
+
+	<!-- start of Topic Messages -->
+	<template name="Publish" id="0x0401"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x04ff01" />
+		<byteArray name="Message" id="0x04ff02" />
+
+	</template>
+
+	<template name="AddMessageListener" id="0x0402"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x04ff01" />
+
+	</template>
+	<template name="RemoveMessageListener" id="0x0403"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x04ff01" />
+		<string name="RegistrationId" id="0x04ff03" />
+
+	</template>
+	<!-- end of Topic Messages -->
+
+	<!-- start of TransactionalList Messages -->
+	<template name="Add" id="0x1301"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x13ff01" />
+		<string name="TxnId" id="0x13ff02" />
+		<uInt64 name="LockPasscode" id="0x13ff03" /> <!-- ThreadId -->
+		<byteArray name="Message" id="0x13ff04" />
+
+	</template>
+	<template name="Remove" id="0x1302"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x13ff01" />
+		<string name="TxnId" id="0x13ff02" />
+		<uInt64 name="LockPasscode" id="0x13ff03" /> <!-- ThreadId -->
+		<byteArray name="Message" id="0x13ff04" />
+
+	</template>
+	<template name="Size" id="0x1303"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x13ff01" />
+		<string name="TxnId" id="0x13ff02" />
+		<uInt64 name="LockPasscode" id="0x13ff03" /> <!-- ThreadId -->
+
+	</template>
+	<!-- end of TransactionalList Messages -->
+
+	<!-- start of TransactionalMap Messages -->
+	<template name="ContainsKey" id="0x1001"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+
+	</template>
+
+	<template name="Get" id="0x1002"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+
+	</template>
+
+	<template name="GetForUpdate" id="0x1003"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+
+	</template>
+
+	<template name="Size" id="0x1004"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="IsEmpty" id="0x1005"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Put" id="0x1006"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+		<byteArray name="Value" id="0x10ff05" />
+		<uInt64 name="TTL" id="0x10ff06" />
+
+	</template>
+
+	<template name="Set" id="0x1007"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+		<byteArray name="Value" id="0x10ff05" />
+
+	</template>
+
+	<template name="PutIfAbsent" id="0x1008"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+		<byteArray name="Value" id="0x10ff05" />
+
+	</template>
+
+	<template name="Replace" id="0x1009"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+		<byteArray name="Value" id="0x10ff05" />
+
+	</template>
+
+	<!-- TODO: check for error in the spec this should be an 100a not 100d as 
+		the spec said -->
+	<template name="ReplaceIfSame" id="0x100a"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+		<byteArray name="OldValue" id="0x10ff06" />
+		<byteArray name="Value" id="0x10ff05" /> <!--New Value -->
+
+	</template>
+
+	<template name="Remove" id="0x100b"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Item" id="0x10ff07" />
+
+	</template>
+
+	<template name="Delete" id="0x100c"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+
+	</template>
+
+	<template name="RemoveIfSame" id="0x100d"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x10ff04" />
+		<byteArray name="Value" id="0x10ff05" />
+
+	</template>
+
+	<template name="Keyset" id="0x100e"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="KeysetWithPredicate" id="0x100f"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Predicate" id="0x10ff08" />
+
+	</template>
+
+	<template name="Values" id="0x1010"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="ValuesWithPredicate" id="0x1011"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x10ff01" />
+		<string name="TxnId" id="0x10ff02" />
+		<uInt64 name="LockPasscode" id="0x10ff03" /> <!-- ThreadId -->
+		<byteArray name="Predicate" id="0x10ff08" />
+
+	</template>
+	<!-- end of TransactionalMap Messages -->
+
+	<!-- start of TransactionalMultiMap Messages -->
+	<template name="Put" id="0x1101"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x11ff01" />
+		<string name="TxnId" id="0x11ff02" />
+		<uInt64 name="LockPasscode" id="0x11ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x11ff04" />
+
+	</template>
+	<template name="Get" id="0x1102"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x11ff01" />
+		<string name="TxnId" id="0x11ff02" />
+		<uInt64 name="LockPasscode" id="0x11ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x11ff04" />
+		<byteArray name="Value" id="0x11ff05" />
+
+	</template>
+	<template name="Remove" id="0x1103"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x11ff01" />
+		<string name="TxnId" id="0x11ff02" />
+		<uInt64 name="LockPasscode" id="0x11ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x11ff04" />
+
+	</template>
+	<template name="RemoveEntry" id="0x1104"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x11ff01" />
+		<string name="TxnId" id="0x11ff02" />
+		<uInt64 name="LockPasscode" id="0x11ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x11ff04" />
+		<byteArray name="Value" id="0x11ff05" />
+
+	</template>
+	<template name="ValueCount" id="0x1105"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x11ff01" />
+		<string name="TxnId" id="0x11ff02" />
+		<uInt64 name="LockPasscode" id="0x11ff03" /> <!-- ThreadId -->
+		<byteArray name="Key" id="0x11ff04" />
+
+	</template>
+	<template name="Size" id="0x1106"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x11ff01" />
+		<string name="TxnId" id="0x11ff02" />
+		<uInt64 name="LockPasscode" id="0x11ff03" /> <!-- ThreadId -->
+
+	</template>
+	<!-- end of TransactionalMultiMap Messages -->
+
+	<!-- start of TransactionalQueue Messages -->
+	<template name="Offer" id="0x1401"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x14ff01" />
+		<string name="TxnId" id="0x14ff02" />
+		<uInt64 name="LockPasscode" id="0x14ff03" /> <!-- ThreadId -->
+		<byteArray name="Item" id="0x14ff04" />
+		<uInt64 name="Timeout" id="0x14ff05" />
+
+	</template>
+
+	<template name="Take" id="0x1402"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x14ff01" />
+		<string name="TxnId" id="0x14ff02" />
+		<uInt64 name="LockPasscode" id="0x14ff03" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Poll" id="0x1403"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x14ff01" />
+		<string name="TxnId" id="0x14ff02" />
+		<uInt64 name="LockPasscode" id="0x14ff03" /> <!-- ThreadId -->
+		<uInt64 name="Timeout" id="0x14ff05" />
+
+	</template>
+
+	<template name="Peek" id="0x1404"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+		)
+		<string name="Name" id="0x14ff01" />
+		<string name="TxnId" id="0x14ff02" />
+		<uInt64 name="LockPasscode" id="0x14ff03" /> <!-- ThreadId -->
+		<uInt64 name="Timeout" id="0x14ff05" />
+
+	</template>
+
+	<template name="Size" id="0x1405"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x14ff01" />
+		<string name="TxnId" id="0x14ff02" />
+		<uInt64 name="LockPasscode" id="0x14ff03" /> <!-- ThreadId -->
+
+	</template>
+	<!-- end of TransactionalQueue Messages -->
+
+	<!-- start of TransactionalSet Messages -->
+	<template name="Add" id="0x1201"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x12ff01" />
+		<string name="TxnId" id="0x12ff02" />
+		<uInt64 name="LockPasscode" id="0x12ff03" /> <!-- ThreadId -->
+		<byteArray name="Item" id="0x12ff04" />
+
+	</template>
+
+	<template name="Remove" id="0x1202"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x12ff01" />
+		<string name="TxnId" id="0x12ff02" />
+		<uInt64 name="LockPasscode" id="0x12ff03" /> <!-- ThreadId -->
+		<byteArray name="Item" id="0x12ff04" />
+
+	</template>
+
+	<template name="Size" id="0x1203"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x12ff01" />
+		<string name="TxnId" id="0x12ff02" />
+		<uInt64 name="LockPasscode" id="0x12ff03" /> <!-- ThreadId -->
+
+	</template>
+	<!-- end of TransactionalSet Messages -->
+
+	<!-- start of Transaction Messages -->
+	<template name="Commit" id="0x1701"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="TransactionId" id="0x17ff01" />
+		<uInt64 name="LockPasscode" id="0x17ff02" /> <!-- ThreadId -->
+		<uInt32 name="PrepareAndCommit" presence="optional" id="0x17ff03"> <!--boolean -->
+			<constant value="1" />
+		</uInt32>
+
+	</template>
+
+	<template name="Create" id="0x1702"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<uInt64 name="Timeout" id="0x17ff04" />
+		<uInt32 name="Durability" id="0x17ff05" />
+		<uInt32 name="TransactionType" id="0x17ff06" />
+		<uInt64 name="LockPasscode" id="0x17ff02" /> <!-- ThreadId -->
+
+	</template>
+
+	<template name="Rollback" id="0x1703"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="TransactionId" id="0x17ff01" />
+		<uInt64 name="LockPasscode" id="0x17ff02" /> <!-- ThreadId -->
+
+	</template>
+	<!-- end of Transaction Messages -->
+
+
+
+</templates>
