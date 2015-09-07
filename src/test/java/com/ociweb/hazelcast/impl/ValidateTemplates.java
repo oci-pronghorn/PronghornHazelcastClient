@@ -7,13 +7,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
+import com.ociweb.pronghorn.pipe.PipeWriter;
+import com.ociweb.pronghorn.pipe.schema.loader.TemplateHandler;
+import com.ociweb.pronghorn.pipe.token.TokenBuilder;
+import com.ociweb.pronghorn.pipe.token.TypeMask;
+import com.ociweb.pronghorn.pipe.util.build.FROMValidation;
+
 import static org.junit.Assert.*;
-import com.ociweb.pronghorn.ring.FieldReferenceOffsetManager;
-import com.ociweb.pronghorn.ring.RingWriter;
-import com.ociweb.pronghorn.ring.schema.loader.TemplateHandler;
-import com.ociweb.pronghorn.ring.token.TokenBuilder;
-import com.ociweb.pronghorn.ring.token.TypeMask;
-import com.ociweb.pronghorn.ring.util.build.FROMValidation;
 
 public class ValidateTemplates {
     
@@ -67,7 +68,7 @@ public class ValidateTemplates {
                "undef:Reserved6", "undef:Reserved7", "undef:Dictionary" };
        
        
-        String writerName = RingWriter.class.getSimpleName();
+        String writerName = PipeWriter.class.getSimpleName();
 
        //TODO: Return correlation call? force correlation value in?
         

@@ -2,13 +2,13 @@ package com.ociweb.hazelcast.impl;
 
 import java.nio.ByteBuffer;
 
-import com.ociweb.pronghorn.ring.RingBuffer;
+import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class ResponseDecodeStage extends PronghornStage {
 
-    protected ResponseDecodeStage(GraphManager graphManager, RingBuffer input, RingBuffer output) {
+    protected ResponseDecodeStage(GraphManager graphManager, Pipe input, Pipe output) {
         super(graphManager, input, output);
         // TODO Auto-generated constructor stub
     }
@@ -58,7 +58,7 @@ public class ResponseDecodeStage extends PronghornStage {
             long lim = ((long)idx+length)<<32;
     
             while (charAndPos<lim) {
-                charAndPos = RingBuffer.decodeUTF8Fast(rawBytes, charAndPos, 0xFFFFFFFF); 
+                charAndPos = Pipe.decodeUTF8Fast(rawBytes, charAndPos, 0xFFFFFFFF); 
                 char c = (char)charAndPos;
                 if (badChar==c) {
                     break;//this was not text or badly encoded so we can not guess it was text.

@@ -1,8 +1,8 @@
 package com.ociweb.hazelcast.impl;
 
-import com.ociweb.pronghorn.ring.FieldReferenceOffsetManager;
-import com.ociweb.pronghorn.ring.RingBuffer;
-import com.ociweb.pronghorn.ring.RingBufferConfig;
+import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
+import com.ociweb.pronghorn.pipe.Pipe;
+import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class GraphBuilder {
@@ -11,21 +11,21 @@ public class GraphBuilder {
     public static GraphManager build(Configurator config) {
         GraphManager gm = new GraphManager();
     
-        RingBufferConfig rawBytesRingConfig = new RingBufferConfig(FieldReferenceOffsetManager.RAW_BYTES, 4000, 2048);
+        PipeConfig rawBytesRingConfig = new PipeConfig(FieldReferenceOffsetManager.RAW_BYTES, 4000, 2048);
         
         
-        RingBuffer hazelcastRequestMessages = new RingBuffer(rawBytesRingConfig);
+        Pipe hazelcastRequestMessages = new Pipe(rawBytesRingConfig);
         
         int maxClusterSize = config.maxClusterSize();
         
-        RingBuffer[] wireMessagesOutputPipe = new RingBuffer[maxClusterSize];
-        RingBuffer[] wireMessagesInputPipe = new RingBuffer[maxClusterSize];
+        Pipe[] wireMessagesOutputPipe = new Pipe[maxClusterSize];
+        Pipe[] wireMessagesInputPipe = new Pipe[maxClusterSize];
         
         int i = maxClusterSize;
         while (--i>=0) {
         
-            wireMessagesOutputPipe[i] = new RingBuffer(rawBytesRingConfig);
-            wireMessagesInputPipe[i] = new RingBuffer(rawBytesRingConfig);
+            wireMessagesOutputPipe[i] = new Pipe(rawBytesRingConfig);
+            wireMessagesInputPipe[i] = new Pipe(rawBytesRingConfig);
                                 
             ConnectionStage cStage = new ConnectionStage(gm, wireMessagesOutputPipe[i],wireMessagesInputPipe[i], config);
         

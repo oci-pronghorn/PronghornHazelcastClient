@@ -11,9 +11,9 @@ import com.hazelcast.config.SecurityConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.ociweb.hazelcast.impl.util.InetSocketAddressImmutable;
-import com.ociweb.pronghorn.ring.FieldReferenceOffsetManager;
-import com.ociweb.pronghorn.ring.RingBuffer;
-import com.ociweb.pronghorn.ring.RingBufferConfig;
+import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
+import com.ociweb.pronghorn.pipe.Pipe;
+import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class ConnectionTest {
@@ -48,12 +48,12 @@ public class ConnectionTest {
         
         GraphManager gm = new GraphManager();
         
-        RingBufferConfig rawBytesConfig = new RingBufferConfig(FieldReferenceOffsetManager.RAW_BYTES);;
+        PipeConfig rawBytesConfig = new PipeConfig(FieldReferenceOffsetManager.RAW_BYTES);;
         
-        RingBuffer input = new RingBuffer(rawBytesConfig);
+        Pipe input = new Pipe(rawBytesConfig);
         input.initBuffers();//Must be done manually because we are not using a scheduler for this test
         
-        RingBuffer output = new RingBuffer(rawBytesConfig);
+        Pipe output = new Pipe(rawBytesConfig);
         output.initBuffers();//Must be done manually because we are not using a scheduler for this test
         
         Configurator conf = new Configurator() {

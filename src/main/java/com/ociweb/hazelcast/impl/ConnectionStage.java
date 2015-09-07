@@ -10,8 +10,8 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ociweb.pronghorn.ring.FieldReferenceOffsetManager;
-import com.ociweb.pronghorn.ring.RingBuffer;
+import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
+import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
@@ -19,8 +19,8 @@ public class ConnectionStage extends PronghornStage {
 
     private final static Logger log = LoggerFactory.getLogger(ConnectionStage.class);
     
-    private final RingBuffer inputMessagesToSend; 
-    private final RingBuffer outputMessagesRecieved;
+    private final Pipe inputMessagesToSend; 
+    private final Pipe outputMessagesRecieved;
     private final Configurator conf;
         
     private final long timeLimitMS = 1000;//TODO: where to set this ping?
@@ -51,13 +51,13 @@ public class ConnectionStage extends PronghornStage {
     private int authUUIDLengthOwner;
     
     
-    protected ConnectionStage(GraphManager graphManager, RingBuffer input, RingBuffer output, Configurator conf) {
+    protected ConnectionStage(GraphManager graphManager, Pipe input, Pipe output, Configurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesRecieved = output;
         this.conf = conf;
         
-        assert(RingBuffer.from(inputMessagesToSend).equals(FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for input.";
+        assert(Pipe.from(inputMessagesToSend).equals(FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for input.";
     }
     
     @Override
@@ -167,7 +167,7 @@ public class ConnectionStage extends PronghornStage {
     }
 
     private int utf8WriteToArray(CharSequence uuidOwner, byte[] initBytes, int idx) {
-        int tLen = RingBuffer.convertToUTF8(uuidOwner, 0, uuidOwner.length(), initBytes, idx+4, 0xFFFFFFFF);
+        int tLen = Pipe.convertToUTF8(uuidOwner, 0, uuidOwner.length(), initBytes, idx+4, 0xFFFFFFFF);
         idx = littleIndianWriteToArray(initBytes, idx, tLen);
         idx += tLen;
         return idx;
@@ -224,12 +224,12 @@ public class ConnectionStage extends PronghornStage {
     
                 //low level read.
                 
-                while (RingBuffer.contentToLowLevelRead(inputMessagesToSend, msgSize)) {
+                while (Pipe.contentToLowLevelRead(inputMessagesToSend, msgSize)) {
                     //is there stuff to send, send it.
                     
-                    int msgIdx = RingBuffer.takeMsgIdx(inputMessagesToSend);                    
-                    int meta = RingBuffer.takeRingByteMetaData(inputMessagesToSend); //for string and byte array
-                    int len = RingBuffer.takeRingByteLen(inputMessagesToSend);
+                    int msgIdx = Pipe.takeMsgIdx(inputMessagesToSend);                    
+                    int meta = Pipe.takeRingByteMetaData(inputMessagesToSend); //for string and byte array
+                    int len = Pipe.takeRingByteLen(inputMessagesToSend);
                                         
                     lengthData.clear(); //TODO: once we measure performance if this stage is holding things up we can move this back to the encoder stage.
                     lengthData.put((byte)(0xFF&len));
@@ -239,8 +239,8 @@ public class ConnectionStage extends PronghornStage {
                     lengthData.flip();                    
                     
                     pendingWriteBuffers[0] = lengthData;
-                    pendingWriteBuffers[1] = RingBuffer.wrappedUnstructuredLayoutBufferA(inputMessagesToSend, meta, len);
-                    pendingWriteBuffers[2] = RingBuffer.wrappedUnstructuredLayoutBufferB(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[1] = Pipe.wrappedUnstructuredLayoutBufferA(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[2] = Pipe.wrappedUnstructuredLayoutBufferB(inputMessagesToSend, meta, len);
                     
                     if (!nonBlockingByteBufferWrite(now)) {
                         exitReason = 4;
@@ -273,7 +273,7 @@ public class ConnectionStage extends PronghornStage {
                 //first check if its bigger than the smallest frame size then check that we have the full frame
                 if (inputSocketBuffer.position()>=18 && 
                     isFrameFullyFilled(inputSocketBuffer) && 
-                    RingBuffer.roomToLowLevelWrite(outputMessagesRecieved, msgSize)) {
+                    Pipe.roomToLowLevelWrite(outputMessagesRecieved, msgSize)) {
                     
                     inputSocketBuffer.flip(); //we are committed to reading the frame at this point
                     ByteBuffer targetBuffer = inputSocketBuffer;
@@ -341,11 +341,11 @@ public class ConnectionStage extends PronghornStage {
                         default:
                              assert(isAuthenticated);
                              //Send to decode stage                                
-                             RingBuffer.addMsgIdx(outputMessagesRecieved, msgIdx);
-                             RingBuffer.addByteBuffer(targetBuffer, frameSize, outputMessagesRecieved);
-                             RingBuffer.publishWrites(outputMessagesRecieved);
+                             Pipe.addMsgIdx(outputMessagesRecieved, msgIdx);
+                             Pipe.addByteBuffer(targetBuffer, frameSize, outputMessagesRecieved);
+                             Pipe.publishWrites(outputMessagesRecieved);
                             
-                             RingBuffer.confirmLowLevelWrite(outputMessagesRecieved, msgSize);
+                             Pipe.confirmLowLevelWrite(outputMessagesRecieved, msgSize);
                                                                                  
                     }
                     
@@ -398,7 +398,7 @@ public class ConnectionStage extends PronghornStage {
         long lim = ((long) Math.min(idx+length, frameLimit) )<<32;
         
         while (charAndPos<lim) {
-            charAndPos = RingBuffer.decodeUTF8Fast(rawBytes, charAndPos, 0xFFFFFFFF); 
+            charAndPos = Pipe.decodeUTF8Fast(rawBytes, charAndPos, 0xFFFFFFFF); 
             char c = (char)charAndPos;
             target.append((char)charAndPos);
         }            

@@ -1,25 +1,25 @@
 package com.ociweb.hazelcast.impl;
 
-import static com.ociweb.pronghorn.ring.RingBuffer.byteBackingArray;
-import static com.ociweb.pronghorn.ring.RingBuffer.byteMask;
-import static com.ociweb.pronghorn.ring.RingBuffer.bytePosition;
+import static com.ociweb.pronghorn.pipe.Pipe.byteBackingArray;
+import static com.ociweb.pronghorn.pipe.Pipe.byteMask;
+import static com.ociweb.pronghorn.pipe.Pipe.bytePosition;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ociweb.pronghorn.ring.FieldReferenceOffsetManager;
-import com.ociweb.pronghorn.ring.RingBuffer;
-import com.ociweb.pronghorn.ring.token.TokenBuilder;
-import com.ociweb.pronghorn.ring.token.TypeMask;
+import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
+import com.ociweb.pronghorn.pipe.Pipe;
+import com.ociweb.pronghorn.pipe.token.TokenBuilder;
+import com.ociweb.pronghorn.pipe.token.TypeMask;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class RequestEnocdeStage extends PronghornStage {
 
-    private final RingBuffer input;
-    private final RingBuffer[] outputs;
+    private final Pipe input;
+    private final Pipe[] outputs;
     private final Configurator config;
-    private RingBuffer[] indexedOutputs;
+    private Pipe[] indexedOutputs;
     private FieldReferenceOffsetManager inputFrom;
     private final int msgSize;
     private final int modValue;
@@ -37,13 +37,13 @@ public class RequestEnocdeStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(RequestEnocdeStage.class);
     
     
-    protected RequestEnocdeStage(GraphManager graphManager, RingBuffer input, RingBuffer[] outputs, Configurator config) {
+    protected RequestEnocdeStage(GraphManager graphManager, Pipe input, Pipe[] outputs, Configurator config) {
         super(graphManager, input, outputs);
         this.input = input;
         this.outputs = outputs;
         this.config = config;
         this.modValue = 0;
-        this.inputFrom = RingBuffer.from(input);
+        this.inputFrom = Pipe.from(input);
         
         //assert that all message have the 0x1ffff0 CorrelationID and 0x1fffef PartitionHash are in the expected position.
         assert(expectedFieldPositions(inputFrom)) : "The CorrelationId and PartitionHash must be in the first and second position for all messages";
@@ -70,10 +70,10 @@ public class RequestEnocdeStage extends PronghornStage {
            return true;
     }
 
-    private boolean expectedFrom(RingBuffer[] toCheck, FieldReferenceOffsetManager rawBytes) {
+    private boolean expectedFrom(Pipe[] toCheck, FieldReferenceOffsetManager rawBytes) {
         int i = toCheck.length;
         while (--i>=0) {
-            if (!RingBuffer.from(toCheck[i]).equals(rawBytes)) {
+            if (!Pipe.from(toCheck[i]).equals(rawBytes)) {
                 return false;
             }        
         }
@@ -84,7 +84,7 @@ public class RequestEnocdeStage extends PronghornStage {
     public void startup() {
         //re-order the rings so they line up with the hashed mod for easy sending of packets to the right node.
         int i = outputs.length;
-        indexedOutputs = new RingBuffer[i];
+        indexedOutputs = new Pipe[i];
         while (--i>=0) {
             indexedOutputs[config.getHashKeyForRingId(outputs[i].ringId)]=outputs[i];            
         }
@@ -97,13 +97,13 @@ public class RequestEnocdeStage extends PronghornStage {
     
     @Override
     public void run() {
-        while (RingBuffer.contentToLowLevelRead(input, 1)) {
+        while (Pipe.contentToLowLevelRead(input, 1)) {
             
             //we know the first field is always the msgIdx so we will peek it to discover the message type
             //int msgIdx = RingBuffer.peekInt(input); since all outputs are the same this is less important.
-            int hashCode = RingBuffer.peekInt(input,1);
+            int hashCode = Pipe.peekInt(input,1);
             
-            RingBuffer targetOutput;
+            Pipe targetOutput;
             if (hashCode<0) {
                 //can pick any output since there is no hash
                 //round robin skipping any who has a backed up queue.
@@ -113,7 +113,7 @@ public class RequestEnocdeStage extends PronghornStage {
                     if (--outputsRoundCursor<0){
                         outputsRoundCursor = outputs.length-1;
                     }                    
-                } while (outputsRoundCursor!=original && !RingBuffer.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize)); 
+                } while (outputsRoundCursor!=original && !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize)); 
                 
                 if (outputsRoundCursor==original) {
                     //no room
@@ -124,16 +124,16 @@ public class RequestEnocdeStage extends PronghornStage {
                 targetOutput = outputs[hashCode%modValue];
                 //If target pipe can not take this message exit and try again next time we get scheduled
                 //NOTE: one output message may only be a fragment of the full message to be sent.
-                if (!RingBuffer.roomToLowLevelWrite(targetOutput, msgSize)) {
+                if (!Pipe.roomToLowLevelWrite(targetOutput, msgSize)) {
                     return;
                 }
             }         
                         
             //output Ring limits must have varLength > 18  to send header and make some progress. >=19
             
-            int msgIdx = RingBuffer.takeMsgIdx(input);
-            int correlationId = RingBuffer.takeValue(input); //this is position 1
-            int partitionHash = RingBuffer.takeValue(input); //this is position 2
+            int msgIdx = Pipe.takeMsgIdx(input);
+            int correlationId = Pipe.takeValue(input); //this is position 1
+            int partitionHash = Pipe.takeValue(input); //this is position 2
             //the remaining take field operators are below in the field loop
             
             
@@ -141,7 +141,7 @@ public class RequestEnocdeStage extends PronghornStage {
             int size = inputFrom.fragScriptSize[msgIdx];
             long msgId = inputFrom.fieldIdScript[msgIdx];
             
-            int bytesCount = RingBuffer.peekInt(input, size-2);
+            int bytesCount = Pipe.peekInt(input, size-2);
             System.err.println("total bytes to write:"+bytesCount+" not counting lengths");
             int maxBytesCount = bytesCount + (size*2); //rough estimate on the  high end
                         
@@ -154,10 +154,10 @@ public class RequestEnocdeStage extends PronghornStage {
             }
             
             //gather all the destination variables
-            int bytePos = RingBuffer.bytesWorkingHeadPosition(targetOutput);
+            int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
             final int startBytePos = bytePos;
-            byte[] byteBuffer = RingBuffer.byteBuffer(targetOutput);
-            int byteMask = RingBuffer.byteMask(targetOutput);
+            byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
+            int byteMask = Pipe.byteMask(targetOutput);
             
             //Hazelcast requires 4 byte length before the packet.  This value is
             //NOT written here on the front of the packet instead it is in the 
@@ -178,7 +178,7 @@ public class RequestEnocdeStage extends PronghornStage {
             bytePos = writeAllFields(msgIdx, size, bytePos, byteBuffer, byteMask); ///TODO: need to add split and continue logic
             
             //done populate of byte buffer, now set length
-            RingBuffer.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
+            Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
            
         }
         
@@ -204,14 +204,14 @@ public class RequestEnocdeStage extends PronghornStage {
                 case TypeMask.IntegerSignedOptional:
                 case TypeMask.IntegerUnsigned:
                 case TypeMask.IntegerUnsignedOptional:
-                    bytePos = writeInt32(RingBuffer.takeValue(input), bytePos, byteBuffer, byteMask); 
+                    bytePos = writeInt32(Pipe.takeValue(input), bytePos, byteBuffer, byteMask); 
                 break;
                 case TypeMask.LongSigned:
                 case TypeMask.LongSignedOptional:
                 case TypeMask.LongUnsigned:
                 case TypeMask.LongUnsignedOptional:
                     
-                    long int64Value = RingBuffer.takeLong(input);//for int64
+                    long int64Value = Pipe.takeLong(input);//for int64
                     
                     byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value));
                     byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>8));
@@ -232,12 +232,12 @@ public class RequestEnocdeStage extends PronghornStage {
                 case TypeMask.TextUTF8:
                 case TypeMask.TextUTF8Optional:                        
 
-                    int meta = RingBuffer.takeRingByteMetaData(input); //for string and byte array
-                    int len = RingBuffer.takeRingByteLen(input);
+                    int meta = Pipe.takeRingByteMetaData(input); //for string and byte array
+                    int len = Pipe.takeRingByteLen(input);
                     
                     bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);                   
                     
-                    RingBuffer.copyBytesFromToRing(byteBuffer, bytePos, byteMask, 
+                    Pipe.copyBytesFromToRing(byteBuffer, bytePos, byteMask, 
                             byteBackingArray(meta, input), bytePosition(meta, input, len), byteMask(input), len);
                     bytePos += len;                                           
                         
