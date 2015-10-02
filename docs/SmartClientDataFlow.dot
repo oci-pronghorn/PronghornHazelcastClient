@@ -1,0 +1,17 @@
+digraph {
+
+"ReqApp" -> "Encode"[label="Request\nMessages"]
+"UnifiedApp" -> "Encode"[label="Request\nMessages"]
+"Encode" -> "Socket\nToMember1"[label="Packets\nOut"]
+"Encode" -> "Socket\nToMember2"[label="Packets\nOut"]
+"Encode" -> "Socket\nToMemberN"[label="Packets\nOut"]
+"Socket\nToMember1" -> "Decode"[label="Packets\nIn"]
+"Socket\nToMember2" -> "Decode"[label="Packets\nIn"]
+"Socket\nToMemberN" -> "Decode"[label="Packets\nIn"]
+"Decode" -> "UnifiedApp"[label="Response\nMessages"]
+"Decode" -> "RespApp"[label="Response\nMessages"]
+
+
+ { rank=same "Socket\nToMember1","Socket\nToMember2","Socket\nToMemberN"}
+
+}

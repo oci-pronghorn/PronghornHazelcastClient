@@ -126,7 +126,7 @@ public class ConnectionStage extends PronghornStage {
         lengthData = ByteBuffer.allocate(4);
         
         //input data can not be any bigger than the output pipe where messages will be sent back to the the caller, we could make this smaller
-        inputSocketBuffer = ByteBuffer.allocate(outputMessagesRecieved.sizeOfUntructuredLayoutRingBuffer);
+        inputSocketBuffer = ByteBuffer.allocate(outputMessagesRecieved.sizeOfBlobRing);
                 
     }
 
@@ -239,8 +239,8 @@ public class ConnectionStage extends PronghornStage {
                     lengthData.flip();                    
                     
                     pendingWriteBuffers[0] = lengthData;
-                    pendingWriteBuffers[1] = Pipe.wrappedUnstructuredLayoutBufferA(inputMessagesToSend, meta, len);
-                    pendingWriteBuffers[2] = Pipe.wrappedUnstructuredLayoutBufferB(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[1] = Pipe.wrappedBlobRingA(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[2] = Pipe.wrappedBlobRingB(inputMessagesToSend, meta, len);
                     
                     if (!nonBlockingByteBufferWrite(now)) {
                         exitReason = 4;
