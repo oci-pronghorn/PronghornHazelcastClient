@@ -224,7 +224,7 @@ public class ConnectionStage extends PronghornStage {
     
                 //low level read.
                 
-                while (Pipe.contentToLowLevelRead(inputMessagesToSend, msgSize)) {
+                while (Pipe.hasContentToRead(inputMessagesToSend, msgSize)) {
                     //is there stuff to send, send it.
                     
                     int msgIdx = Pipe.takeMsgIdx(inputMessagesToSend);                    
@@ -239,8 +239,8 @@ public class ConnectionStage extends PronghornStage {
                     lengthData.flip();                    
                     
                     pendingWriteBuffers[0] = lengthData;
-                    pendingWriteBuffers[1] = Pipe.wrappedBlobRingA(inputMessagesToSend, meta, len);
-                    pendingWriteBuffers[2] = Pipe.wrappedBlobRingB(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[1] = Pipe.wrappedBlobReadingRingA(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[2] = Pipe.wrappedBlobReadingRingB(inputMessagesToSend,meta,len);
                     
                     if (!nonBlockingByteBufferWrite(now)) {
                         exitReason = 4;

@@ -97,7 +97,7 @@ public class RequestEnocdeStage extends PronghornStage {
     
     @Override
     public void run() {
-        while (Pipe.contentToLowLevelRead(input, 1)) {
+        while (Pipe.hasContentToRead(input, 1)) {
             
             //we know the first field is always the msgIdx so we will peek it to discover the message type
             //int msgIdx = RingBuffer.peekInt(input); since all outputs are the same this is less important.
