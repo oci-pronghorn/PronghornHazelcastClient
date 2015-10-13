@@ -5,9 +5,6 @@ import java.net.InetSocketAddress;
 import org.junit.Test;
 
 import com.hazelcast.config.Config;
-import com.hazelcast.config.LoginModuleConfig;
-import com.hazelcast.config.PermissionConfig;
-import com.hazelcast.config.SecurityConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.ociweb.hazelcast.impl.util.InetSocketAddressImmutable;

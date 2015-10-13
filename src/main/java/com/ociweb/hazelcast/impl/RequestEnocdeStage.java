@@ -1,7 +1,6 @@
 package com.ociweb.hazelcast.impl;
 
 import static com.ociweb.pronghorn.pipe.Pipe.byteBackingArray;
-import static com.ociweb.pronghorn.pipe.Pipe.byteMask;
 import static com.ociweb.pronghorn.pipe.Pipe.bytePosition;
 
 import org.slf4j.Logger;
@@ -157,7 +156,7 @@ public class RequestEnocdeStage extends PronghornStage {
             int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
             final int startBytePos = bytePos;
             byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
-            int byteMask = Pipe.byteMask(targetOutput);
+            int byteMask = Pipe.blobMask(targetOutput);
             
             //Hazelcast requires 4 byte length before the packet.  This value is
             //NOT written here on the front of the packet instead it is in the 
@@ -238,7 +237,7 @@ public class RequestEnocdeStage extends PronghornStage {
                     bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);                   
                     
                     Pipe.copyBytesFromToRing(byteBuffer, bytePos, byteMask, 
-                            byteBackingArray(meta, input), bytePosition(meta, input, len), byteMask(input), len);
+                            byteBackingArray(meta, input), bytePosition(meta, input, len), Pipe.blobMask(input), len);
                     bytePos += len;                                           
                         
                 break;
