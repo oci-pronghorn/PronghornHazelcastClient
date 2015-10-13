@@ -1,7 +1,9 @@
+/PronghornHazelcastClient.iml
 target/
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
+/.idea/
 pom.xml.next
 release.properties
 dependency-reduced-pom.xml
