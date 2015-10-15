@@ -5,7 +5,6 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,7 @@ public class ConnectionStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(ConnectionStage.class);
 
     private final Pipe inputMessagesToSend;
-    private final Pipe outputMessagesRecieved;
+    private final Pipe outputMessagesReceived;
     private final Configurator conf;
 
     private final long timeLimitMS = 1000;//TODO: where to set this ping?
@@ -54,7 +53,7 @@ public class ConnectionStage extends PronghornStage {
     protected ConnectionStage(GraphManager graphManager, Pipe input, Pipe output, Configurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
-        this.outputMessagesRecieved = output;
+        this.outputMessagesReceived = output;
         this.conf = conf;
 
         assert(Pipe.from(inputMessagesToSend).equals(FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for input.";
@@ -111,7 +110,7 @@ public class ConnectionStage extends PronghornStage {
 
         //set this frame length now that we know what the value is.
         int len = idx - 6;//do not count the first 6 connection bytes these are assumed to always be present.
-        initBytes[lenIdx++]  = (byte)(0xFF&(len>>0));
+        initBytes[lenIdx++]  = (byte)(0xFF&(len));
         initBytes[lenIdx++]  = (byte)(0xFF&(len>>8));
         initBytes[lenIdx++]  = (byte)(0xFF&(len>>16));
         initBytes[lenIdx++]  = (byte)(0xFF&(len>>24));
@@ -126,7 +125,7 @@ public class ConnectionStage extends PronghornStage {
         lengthData = ByteBuffer.allocate(4);
 
         //input data can not be any bigger than the output pipe where messages will be sent back to the the caller, we could make this smaller
-        inputSocketBuffer = ByteBuffer.allocate(outputMessagesRecieved.sizeOfBlobRing);
+        inputSocketBuffer = ByteBuffer.allocate(outputMessagesReceived.sizeOfBlobRing);
 
     }
 
@@ -273,7 +272,7 @@ public class ConnectionStage extends PronghornStage {
                 //first check if its bigger than the smallest frame size then check that we have the full frame
                 if (inputSocketBuffer.position()>=18 &&
                     isFrameFullyFilled(inputSocketBuffer) &&
-                    Pipe.roomToLowLevelWrite(outputMessagesRecieved, msgSize)) {
+                    Pipe.roomToLowLevelWrite(outputMessagesReceived, msgSize)) {
 
                     inputSocketBuffer.flip(); //we are committed to reading the frame at this point
                     ByteBuffer targetBuffer = inputSocketBuffer;
@@ -341,11 +340,11 @@ public class ConnectionStage extends PronghornStage {
                         default:
                              assert(isAuthenticated);
                              //Send to decode stage
-                             Pipe.addMsgIdx(outputMessagesRecieved, msgIdx);
-                             Pipe.addByteBuffer(targetBuffer, frameSize, outputMessagesRecieved);
-                             Pipe.publishWrites(outputMessagesRecieved);
+                             int unusedFragmentDataSize = Pipe.addMsgIdx(outputMessagesReceived, msgIdx);
+                             Pipe.addByteBuffer(targetBuffer, frameSize, outputMessagesReceived);
+                             Pipe.publishWrites(outputMessagesReceived);
 
-                             Pipe.confirmLowLevelWrite(outputMessagesRecieved, msgSize);
+                             Pipe.confirmLowLevelWrite(outputMessagesReceived, msgSize);
 
                     }
 
