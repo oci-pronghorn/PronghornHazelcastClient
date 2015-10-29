@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+
+<!--
+	This file documents the Hazelcast Set API requests.
+	The code generator will use this to write all the interface classes
+-->
+
+	<!-- start of Set Messages -->
+	<template name="Size" id="0x0601"
+		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
+
+		<string name="Name" id="0x06ff01" />
+
+	</template>
+    <!-- end of Set Messages -->
+
+</templates>
