@@ -1,8 +1,8 @@
-package com.ociweb.hazelcast.impl;
+package com.ociweb.hazelcast.stage;
 
 import java.net.InetSocketAddress;
 
-import com.ociweb.hazelcast.impl.util.InetSocketAddressImmutable;
+import com.ociweb.hazelcast.stage.util.InetSocketAddressImmutable;
 
 public class Configurator {
 
@@ -27,11 +27,11 @@ public class Configurator {
     }
 
     public CharSequence getUserName(int stageId) {
-        return "dev"; //default value 
+        return "dev"; //default value
     }
 
     public CharSequence getPassword(int stageId) {
-        return "dev-pass"; //default value 
+        return "dev-pass"; //default value
     }
 
     public int maxClusterSize() {
@@ -39,9 +39,9 @@ public class Configurator {
     }
 
     public int getHashKeyForRingId(int ringId) {
-        
+
         //can only return this after the connection stages register which node they have and which ring is coming in.
-        
+
         // TODO Auto-generated method stub
         return 0;
     }

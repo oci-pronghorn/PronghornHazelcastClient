@@ -19,7 +19,7 @@ public class EncoderTestGenerator extends PronghornStage {
         super(gm, NONE, output);
         this.iterations = iterations;
         StreamingWriteVisitor visitor = new StreamingWriteVisitorGenerator(Pipe.from(output), new Random(seed),
-            output.maxAvgVarLen>>3,  //room for UTF8
+            output.maxAvgVarLen>>3,  // Ensure there will be room for the maximum number of UTF8 chars.
             output.maxAvgVarLen>>1); //just use half
         this.writer = new StreamingVisitorWriter(output, visitor);
     }
@@ -32,9 +32,9 @@ public class EncoderTestGenerator extends PronghornStage {
 
     @Override
     public void run() {
-        if (iterations-- > 0) {
-            writer.run();
-        } else {
+        writer.run();
+        iterations--;
+        if (iterations > 0) {
             requestShutdown();
         }
     }

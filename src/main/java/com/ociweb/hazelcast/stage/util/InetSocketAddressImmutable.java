@@ -1,19 +1,19 @@
-package com.ociweb.hazelcast.impl.util;
+package com.ociweb.hazelcast.stage.util;
 
 import java.net.InetSocketAddress;
 
 public class InetSocketAddressImmutable extends InetSocketAddress {
 
-    private String value; 
-            
+    private String value;
+
     public InetSocketAddressImmutable(String hostname, int port) {
         super(hostname, port);
     }
-    
+
     public void reset() {
         value = null;
     }
-    
+
     @Override
     public String toString() {
         if (null == value) {

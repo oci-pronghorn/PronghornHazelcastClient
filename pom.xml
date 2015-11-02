@@ -150,9 +150,9 @@
         <configuration>
         <!-- TODO: add common name space for these obfuscated classes -->
           <options>
-            <option>-keep public class com.ociweb.hazelcast.HZClient {
-			    public static void main(java.lang.String[]);
-			}</option>
+            <option>-keep public class com.ociweb.hazelcast.HazelcastClient {
+                public static void main(java.lang.String[]);
+                }</option>
             <!--  option>-dontobfuscate</option -->
             <option>-optimizationpasses 2</option>
             <option>-allowaccessmodification</option>

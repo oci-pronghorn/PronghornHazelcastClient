@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
 
-<!-- 
+<!--
 
 	This file documents all the possible requests into the API.
 	The code generator will use this to write all the interface classes
 
 	The client message may not all be exposed since many of these requests are internal by nature.
-	
-	The PartitionHash appears as a member to most messages but it will not be exponsed. 
+
+	The PartitionHash appears as a member to most messages but it will not be exponsed.
 	This provides a storage location for the hash when it is computed and before it is ready to be sent.
 
--->		
-				
+-->
+
 	<!-- start of Client Messages -->
 	<template name="Authentication" id="0x2"
 		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
@@ -152,8 +152,8 @@
 
 	<template name="Get" id="0x0a06"
 		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
-		<!-- name="PartitionHash" id="0x1fffef" -->
-
+		<uInt32 name="CorrelationID" id="0x1ffff0" />
+		<uInt32 name="PartitionHash" id="0x1fffef" />
 		<string name="Name" id="0x0aff01" />
 		<uInt32 name="PartitionHash" id="0x1fffef" />
 	</template>
@@ -2662,7 +2662,7 @@
 
 	</template>
 
-	<!-- TODO: check for error in the spec this should be an 100a not 100d as 
+	<!-- TODO: check for error in the spec this should be an 100a not 100d as
 		the spec said -->
 	<template name="ReplaceIfSame" id="0x100a"
 		xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">

@@ -1,4 +1,4 @@
-package com.ociweb.hazelcast.impl;
+package com.ociweb.hazelcast.stage;
 
 import java.net.InetSocketAddress;
 
@@ -7,7 +7,7 @@ import org.junit.Test;
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.ociweb.hazelcast.impl.util.InetSocketAddressImmutable;
+import com.ociweb.hazelcast.stage.util.InetSocketAddressImmutable;
 import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;

@@ -1,8 +1,5 @@
 package com.ociweb.hazelcast.stage;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
@@ -11,12 +8,10 @@ import com.ociweb.pronghorn.stage.monitor.MonitorConsoleStage;
 import com.ociweb.pronghorn.stage.route.SplitterStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 import com.ociweb.pronghorn.stage.scheduling.ThreadPerStageScheduler;
-import com.ociweb.pronghorn.stage.test.TestGenerator;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * Test the Hazelcast Client Set method encoding
@@ -24,17 +19,16 @@ import java.util.concurrent.TimeUnit;
 public class SetEncoderTest {
 
     private final long seed = 43L;
-    private final int iterations = 1;
+    private final int iterations = 2;
     private final long TIMEOUT_SECONDS = 4;
 
-    @Ignore
     @Test
     public void setApiTest() {
 
         GraphManager gm = new GraphManager();
 
         // TODO: Figure out the real min and max for these
-        // TODO: The HazelcastRequestsSchema needs to be regenerated.  It's currently using the minimal set of requests
+        // FIXME: The HazelcastRequestsSchema needs to be regenerated.  It's currently using the minimal set of requests
 
         // Create Generator Stage (from Pronghorn Pipes).
         PipeConfig hzReqConfig = new PipeConfig(HazelcastRequestsSchema.instance, 5, 256);
@@ -53,13 +47,12 @@ public class SetEncoderTest {
         // RequestEncodeStage is the class under test.
         new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator());
 
-        // The class  the expecteds w/Pipes
-        Pipe expectedsToComparatorPipe = new Pipe(rawBytes);
-        // TODO: Is the configurator really needed in Expecteds?
-        new ExpectedsCreator(gm, pipeToExpecteds, expectedsToComparatorPipe, new Configurator());
+        // Create the class to build the expected test values
+        Pipe expectedsToValidatorPipe = new Pipe(rawBytes);
+        // TODO: Is the configurator really needed in ExpectedsBuilder?
+        new ExpectedsBuilder(gm, pipeToExpecteds, expectedsToValidatorPipe, new Configurator());
 
-        Pipe validatorToComparatorPipe = new Pipe(rawBytes);
-        PronghornStage validate = new EncoderTestValidator<RawDataSchema>(gm, expectedsToComparatorPipe, encoderToValidator[0]);
+        PronghornStage validate = new EncoderTestValidator<RawDataSchema>(gm, expectedsToValidatorPipe, encoderToValidator[0]);
 
         MonitorConsoleStage.attach(gm);
 

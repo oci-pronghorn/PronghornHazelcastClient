@@ -1,4 +1,4 @@
-package com.ociweb.hazelcast.impl;
+package com.ociweb.hazelcast.stage;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

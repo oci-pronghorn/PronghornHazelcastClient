@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import static com.ociweb.pronghorn.pipe.Pipe.byteBackingArray;
 import static com.ociweb.pronghorn.pipe.Pipe.bytePosition;
 
-public class ExpectedsCreator extends PronghornStage {
+public class ExpectedsBuilder extends PronghornStage {
 
     private final Pipe input;
     private final Pipe output;
@@ -38,10 +38,10 @@ public class ExpectedsCreator extends PronghornStage {
     private final static byte BIT_FLAG_START = (byte)0x80;
     private final static byte BIT_FLAG_END = (byte)0x40;
 
-    private final static Logger log = LoggerFactory.getLogger(ExpectedsCreator.class);
+    private final static Logger log = LoggerFactory.getLogger(ExpectedsBuilder.class);
 
 
-    protected ExpectedsCreator(GraphManager graphManager, Pipe input, Pipe output, Configurator config) {
+    protected ExpectedsBuilder(GraphManager graphManager, Pipe input, Pipe output, Configurator config) {
         super(graphManager, input, output);
         this.input = input;
         this.output = output;
@@ -95,11 +95,44 @@ public class ExpectedsCreator extends PronghornStage {
     @Override
     public void run() {
         while (Pipe.hasContentToRead(input, 1)) {
-            //we know the first field is always the msgIdx so we will peek it to discover the message type
-            //int msgIdx = RingBuffer.peekInt(input); since all outputs are the same this is less important.
-            int hashCode = Pipe.peekInt(input,1);
 
-            Pipe targetOutput = output;
+            // The hash code is always the second field.  Take a peek and figure out which pipe or pipes will be used
+            // then check for enough room in the intended destinations.  If there isn't, return.
+            int hashCode = Pipe.peekInt(input, 2);
+
+            Pipe targetOutput;
+            if (hashCode < 0) {
+                // This is a command that does not have a particular partition, but rather is applicable to all the
+                // machines in a cluster.  Consequently, all the output queues need to be checked for room.
+                // This is done in round robin, skipping any that have a backed up queue.
+                // TODO: Not doing this for now, but I don't think this code means what I think it means...
+                final int original = outputsRoundCursor;
+                do {
+                    if (--outputsRoundCursor < 0) {
+                        // FIXME:
+//                        outputsRoundCursor = outputs.length - 1;
+                    }
+                    // FIXME:
+                } while (outputsRoundCursor != original /* && !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize)*/ );
+
+                if (outputsRoundCursor == original) {
+                    // no room was found
+                    return;
+                }
+                // TODO: THis should probably be an array (later when testing for multitple partition targets
+//                targetOutput = outputs[outputsRoundCursor];
+                targetOutput = output;
+            } else {
+                // TODO: THis should probably be an array (later when testing for multitple partition targets
+//                targetOutput = outputs[hashCode % modValue];
+                targetOutput = output;
+                // If the target pipe can not take this message, then exit.  The invoking facility will be responsible
+                // for sending the message back in to try in a later time slot.
+                // Note Well: One output message may only be a fragment of the full message to be sent.
+                if (!Pipe.roomToLowLevelWrite(targetOutput, msgSize)) {
+                    return;
+                }
+            }
 
             //output Ring limits must have varLength > 18  to send header and make some progress. >=19
             int msgIdx = Pipe.takeMsgIdx(input);
