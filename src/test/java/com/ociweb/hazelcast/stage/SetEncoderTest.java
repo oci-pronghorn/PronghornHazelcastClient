@@ -22,6 +22,7 @@ public class SetEncoderTest {
     private final int iterations = 2;
     private final long TIMEOUT_SECONDS = 4;
 
+    @Ignore
     @Test
     public void setApiTest() {
 
