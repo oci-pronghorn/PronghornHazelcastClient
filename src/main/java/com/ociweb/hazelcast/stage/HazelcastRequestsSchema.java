@@ -5,8 +5,8 @@ import com.ociweb.pronghorn.pipe.MessageSchema;
 
 public class HazelcastRequestsSchema extends MessageSchema {
 
-    public final static FieldReferenceOffsetManager hzRequests = new FieldReferenceOffsetManager(
-        new int[]{0xc0400004,0x80000000,0x80000001,0xa0000000,0xc0200004},
+    public final static FieldReferenceOffsetManager FROM = new FieldReferenceOffsetManager(
+        new int[]{0xc0400004,0x80000000,0x80000001,0xa8000000,0xc0200004},
         (short)0,
         new String[]{"Size","CorrelationID","PartitionHash","Name",null},
         new long[]{1537, 2097136, 2097135, 458497, 0},
@@ -16,6 +16,12 @@ public class HazelcastRequestsSchema extends MessageSchema {
     public static final HazelcastRequestsSchema instance = new HazelcastRequestsSchema();
 
     private HazelcastRequestsSchema() {
-        super(hzRequests);
+        super(FROM);
     }
+
+    public static final int MSG_SIZE_1537 = 0x0;
+    public static final int MSG_SIZE_1537_FIELD_CORRELATIONID_2097136 = 0x1;
+    public static final int MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135 = 0x2;
+    public static final int MSG_SIZE_1537_FIELD_NAME_458497 = 0x5000003;
+
 }

@@ -12,7 +12,7 @@
 		<uInt32 name="CorrelationID" id="0x1ffff0" />
 		<uInt32 name="PartitionHash" id="0x1fffef" />
 
-		<string name="Name" id="0x06ff01" />
+		<string name="Name" id="0x06ff01" charset="unicode"/>
 
 	</template>
     <!-- end of Set Messages -->

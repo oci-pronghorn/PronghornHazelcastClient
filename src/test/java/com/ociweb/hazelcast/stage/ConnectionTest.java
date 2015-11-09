@@ -2,6 +2,7 @@ package com.ociweb.hazelcast.stage;
 
 import java.net.InetSocketAddress;
 
+import com.ociweb.pronghorn.pipe.RawDataSchema;
 import org.junit.Test;
 
 import com.hazelcast.config.Config;
@@ -45,7 +46,7 @@ public class ConnectionTest {
 
         GraphManager gm = new GraphManager();
 
-        PipeConfig rawBytesConfig = new PipeConfig(FieldReferenceOffsetManager.RAW_BYTES);;
+        PipeConfig rawBytesConfig = new PipeConfig(RawDataSchema.instance);;
 
         Pipe input = new Pipe(rawBytesConfig);
         input.initBuffers(); //Must be done manually because we are not using a scheduler for this test

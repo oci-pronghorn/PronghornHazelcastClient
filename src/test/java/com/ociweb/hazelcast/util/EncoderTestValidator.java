@@ -1,4 +1,4 @@
-package com.ociweb.hazelcast.stage;
+package com.ociweb.hazelcast.util;
 
 
 import com.ociweb.pronghorn.pipe.MessageSchema;

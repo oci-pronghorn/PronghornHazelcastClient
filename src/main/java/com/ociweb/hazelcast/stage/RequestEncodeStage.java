@@ -247,6 +247,8 @@ public class RequestEncodeStage extends PronghornStage {
                     bytePos += len;
 
                 break;
+                case TypeMask.Group:
+                    break;
                 default:
                     throw new UnsupportedOperationException("unknown type "+TokenBuilder.tokenToString(token));
 

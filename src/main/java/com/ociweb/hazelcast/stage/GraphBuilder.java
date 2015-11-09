@@ -3,6 +3,7 @@ package com.ociweb.hazelcast.stage;
 import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;
+import com.ociweb.pronghorn.pipe.RawDataSchema;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class GraphBuilder {
@@ -11,7 +12,7 @@ public class GraphBuilder {
     public static GraphManager build(Configurator config) {
         GraphManager gm = new GraphManager();
 
-        PipeConfig rawBytesRingConfig = new PipeConfig(FieldReferenceOffsetManager.RAW_BYTES, 4000, 2048);
+        PipeConfig rawBytesRingConfig = new PipeConfig(RawDataSchema.instance, 4000, 2048);
 
 
         Pipe hazelcastRequestMessages = new Pipe(rawBytesRingConfig);

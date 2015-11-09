@@ -1,5 +1,8 @@
 package com.ociweb.hazelcast.stage;
 
+import com.ociweb.hazelcast.util.EncoderTestGenerator;
+import com.ociweb.hazelcast.util.EncoderTestValidator;
+import com.ociweb.hazelcast.util.ExpectedEncoderMessageBuilder;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
@@ -20,7 +23,6 @@ public class SetEncoderTest {
 
     private final long seed = 43L;
     private final int iterations = 2;
-    private final long TIMEOUT_SECONDS = 4;
 
     @Ignore
     @Test
@@ -49,11 +51,10 @@ public class SetEncoderTest {
         new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator());
 
         // Create the class to build the expected test values
-        Pipe expectedsToValidatorPipe = new Pipe(rawBytes);
-        // TODO: Is the configurator really needed in ExpectedsBuilder?
-        new ExpectedsBuilder(gm, pipeToExpecteds, expectedsToValidatorPipe, new Configurator());
+        Pipe expectedMessagesToValidatorPipe = new Pipe(rawBytes);
+        new ExpectedEncoderMessageBuilder(gm, pipeToExpecteds, expectedMessagesToValidatorPipe);
 
-        PronghornStage validate = new EncoderTestValidator<RawDataSchema>(gm, expectedsToValidatorPipe, encoderToValidator[0]);
+        PronghornStage validate = new EncoderTestValidator<RawDataSchema>(gm, expectedMessagesToValidatorPipe, encoderToValidator[0]);
 
         MonitorConsoleStage.attach(gm);
 

@@ -1,4 +1,4 @@
-package com.ociweb.hazelcast.stage;
+package com.ociweb.hazelcast.util;
 
 import com.ociweb.pronghorn.pipe.MessageSchema;
 import com.ociweb.pronghorn.pipe.Pipe;
@@ -34,7 +34,7 @@ public class EncoderTestGenerator extends PronghornStage {
     public void run() {
         writer.run();
         iterations--;
-        if (iterations > 0) {
+        if (iterations == 0) {
             requestShutdown();
         }
     }

@@ -1,4 +1,4 @@
-package com.ociweb.hazelcast.stage;
+package com.ociweb.hazelcast.util;
 
 import java.io.IOException;
 
@@ -111,7 +111,7 @@ public class ValidateTemplates {
                    int token = from.tokens[idx];
                    int type = TokenBuilder.extractType(token);
 
-                  // System.err.println(from.fieldNameScript[idx]+" next "+from.fieldNameScript[idx+1]);
+                   System.err.println(from.fieldNameScript[idx]+" next "+from.fieldNameScript[idx+1]);
 
                    if (0x1fffef == from.fieldIdScript[idx]) { //PartitionHash constant TODO: extract as static final
                        //this value is computed in the method not passed in
