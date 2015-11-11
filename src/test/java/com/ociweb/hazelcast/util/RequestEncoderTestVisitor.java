@@ -22,11 +22,12 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
     private int maxFragmentSize;
     private int bytePos;
     int startBytePos;
-    byte[] byteBuffer;
+    ByteBuffer inBuffer;
+    byte[] outBuffer;
     int byteMask;
 
 	StringBuilder tempStringBuilder =  new StringBuilder(128);
-	ByteBuffer tempByteBuffer = ByteBuffer.allocate(512);
+	ByteBuffer tempByteBuffer = ByteBuffer.allocate(1024);
 
 	RequestEncoderTestVisitor(Pipe<RawDataSchema> output) {
         this.output = output;
@@ -49,7 +50,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         if (Pipe.hasRoomForWrite(output, maxFragmentSize)) {
             bytePos = Pipe.bytesWorkingHeadPosition(output);
             startBytePos = bytePos;
-            byteBuffer = Pipe.byteBuffer(output);
+            outBuffer = Pipe.byteBuffer(output);
             byteMask = Pipe.blobMask(output);
         }
     }
@@ -86,7 +87,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 	@Override
 	public void visitSignedInteger(String name, long id, int value) {
         System.out.println("SignedInteger:" + name);
-        bytePos = writeInt32(value, bytePos, byteBuffer, byteMask);
+        bytePos = writeInt32(value, bytePos, outBuffer, byteMask);
 	}
 
 	@Override
@@ -94,7 +95,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("UnSignedInteger name:" + name);
         System.out.println("UnSignedInteger id:" + id);
         System.out.println("UnSignedInteger value:" + value);
-        bytePos = writeInt32((int)value, bytePos, byteBuffer, byteMask);
+        bytePos = writeInt32((int)value, bytePos, outBuffer, byteMask);
 	}
 
 	@Override
@@ -102,7 +103,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("SignedLong name :" + name);
         System.out.println("SignedLong id:" + id);
         System.out.println("SignedLong value:" + value);
-        bytePos = writeInt64(value, bytePos, byteBuffer, byteMask);
+        bytePos = writeInt64(value, bytePos, outBuffer, byteMask);
     }
 
 	@Override
@@ -133,17 +134,17 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("visitUTF8 name :" + name);
         System.out.println("visitUTF8 id:" + id);
         System.out.println("visitUTF8 value:" + value);
-        bytePos = writeInt32(value.toString().length(), bytePos, byteBuffer, byteMask);
-
+        int len = value.toString().length();
+        bytePos = writeInt32(len, bytePos, outBuffer, byteMask);
+        System.arraycopy(value.toString().getBytes(), 0, outBuffer, bytePos, len);
+        bytePos += len;
 	}
 
 	@Override
 	public Appendable targetASCII(String name, long id) {
         System.out.println("TargetASCII name:" + name);
         System.out.println("TargetASCII id:" + id);
-        // TODO: Unsupported Exception should be thrown for Hazelcast
-        tempStringBuilder.setLength(0);
-        return tempStringBuilder;
+        throw new UnsupportedOperationException("ASCII requested -- All text for Hazelcast MUST be UTF8 encoded.");
 	}
 
     @Override
@@ -151,6 +152,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("visitAscii name:" + name);
         System.out.println("visitAscii id:" + id);
         System.out.println("visitAscii value:" + value);
+        throw new UnsupportedOperationException("ASCII requested -- All text for Hazelcast MUST be UTF8 encoded.");
     }
 
 	@Override
@@ -158,7 +160,12 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("targetBytes name:" + name);
         System.out.println("targetBytes id:" + id);
         System.out.println("targetBytes length:" + length);
-        return null;
+        tempByteBuffer.clear();
+        if (tempByteBuffer.capacity() < length) {
+            tempByteBuffer = ByteBuffer.allocate(length * 2);
+        }
+        bytePos = writeInt32(length, bytePos, outBuffer, byteMask);
+        return tempByteBuffer;
 	}
 
 	@Override
@@ -166,6 +173,9 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("visitBytes name:" + name);
         System.out.println("visitBytes id:" + id);
         System.out.println("visitBytes value:" + value);
+
+        System.arraycopy(value.array(), 0, outBuffer, bytePos, value.position());
+        bytePos += value.position();
 	}
 
 	@Override
