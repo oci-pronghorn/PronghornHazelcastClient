@@ -24,7 +24,7 @@ public class SetEncoderTest {
     private final long seed = 43L;
     private final int iterations = 2;
 
-    @Ignore
+
     @Test
     public void setApiTest() {
 

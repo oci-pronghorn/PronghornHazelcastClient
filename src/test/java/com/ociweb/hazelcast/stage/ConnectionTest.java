@@ -48,10 +48,10 @@ public class ConnectionTest {
 
         PipeConfig rawBytesConfig = new PipeConfig(RawDataSchema.instance);;
 
-        Pipe input = new Pipe(rawBytesConfig);
+        Pipe<RawDataSchema> input = new Pipe<>(rawBytesConfig);
         input.initBuffers(); //Must be done manually because we are not using a scheduler for this test
 
-        Pipe output = new Pipe(rawBytesConfig);
+        Pipe<RawDataSchema> output = new Pipe<>(rawBytesConfig);
         output.initBuffers(); //Must be done manually because we are not using a scheduler for this test
 
         Configurator conf = new Configurator() {

@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.NotYetConnectedException;
 import java.nio.channels.SocketChannel;
 
+import com.ociweb.pronghorn.pipe.RawDataSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,8 +19,8 @@ public class ConnectionStage extends PronghornStage {
 
     private final static Logger log = LoggerFactory.getLogger(ConnectionStage.class);
 
-    private final Pipe inputMessagesToSend;
-    private final Pipe outputMessagesReceived;
+    private final Pipe<RawDataSchema> inputMessagesToSend;
+    private final Pipe<RawDataSchema> outputMessagesReceived;
     private final Configurator conf;
 
     private final long timeLimitMS = 1000;//TODO: where to set this ping?
@@ -50,7 +51,7 @@ public class ConnectionStage extends PronghornStage {
     private int authUUIDLengthOwner;
 
 
-    protected ConnectionStage(GraphManager graphManager, Pipe input, Pipe output, Configurator conf) {
+    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RawDataSchema> output, Configurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = output;

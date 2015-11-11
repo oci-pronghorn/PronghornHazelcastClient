@@ -3,6 +3,7 @@ package com.ociweb.hazelcast.stage;
 import static com.ociweb.pronghorn.pipe.Pipe.byteBackingArray;
 import static com.ociweb.pronghorn.pipe.Pipe.bytePosition;
 
+import com.ociweb.pronghorn.pipe.PipeWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,8 +24,6 @@ public class RequestEncodeStage extends PronghornStage {
     private final int msgSize;
     private final int modValue;
     private int outputsRoundCursor = 0;
-    private int splitCursorPos = -1; //which field are we split on
-    private int splitBytesPos = -1; //where in the byte buffer are split
 
     private final static long ID_CORRELATIONID = 0x1ffff0;
     private final static long ID_PARTITIONHASH = 0x1fffef;
@@ -36,20 +35,20 @@ public class RequestEncodeStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(RequestEncodeStage.class);
 
 
+    // ToBeResolved: Is this the right place for the config?  Only used for HashKey (that may be enough)
     protected RequestEncodeStage(GraphManager graphManager, Pipe input, Pipe[] outputs, Configurator config) {
         super(graphManager, input, outputs);
         this.input = input;
         this.outputs = outputs;
         this.config = config;
+
         // FIXME: Put a real value here -- ditto for ExpectedCreator stage
         this.modValue = 1;
         this.inputFrom = Pipe.from(input);
+        //we only send one kind of message (packets to be sent)
+        this.msgSize = FieldReferenceOffsetManager.RAW_BYTES.fragDataSize[0];
 
-        //assert that all message have the 0x1ffff0 CorrelationID and 0x1fffef PartitionHash are in the expected position.
-        assert(expectedFieldPositions(inputFrom)) : "The CorrelationId and PartitionHash must be in the first and second position for all messages";
 
-        assert(expectedFrom(outputs, FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for output.";
-        this.msgSize = FieldReferenceOffsetManager.RAW_BYTES.fragDataSize[0]; //we only send one kind of message (packets to be sent)
     }
 
     private boolean expectedFieldPositions(FieldReferenceOffsetManager from) {
@@ -87,6 +86,11 @@ public class RequestEncodeStage extends PronghornStage {
 
     @Override
     public void startup() {
+        // ToBeResolved: Are the following checks even a good idea anymore?
+        //assert that all message have the 0x1ffff0 CorrelationID and 0x1fffef PartitionHash are in the expected position.
+        assert(expectedFieldPositions(inputFrom)) : "The CorrelationId and PartitionHash must be in the first and second position for all messages";
+        assert(expectedFrom(outputs, FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for output.";
+
         // Reorder the pipes so they line up with the hashed mod for easy sending of packets to the right node.
         int i = outputs.length;
         indexedOutputs = new Pipe[i];
@@ -94,31 +98,34 @@ public class RequestEncodeStage extends PronghornStage {
             indexedOutputs[config.getHashKeyForRingId(outputs[i].ringId)] = outputs[i];
         }
         // TODO(nrt): review the FROM and build an index rule for where to find the key at runtime for every message
-        // TODO(cas): The modValue will need to be set here to reflect the number of machines in the cluster.
-    }
 
+        // TODO(cas): This is where the modValue will be set to reflect the number of machines in the cluster.
+    }
 
     @Override
     public void run() {
 
         while (Pipe.hasContentToRead(input, 1)) {
 
-            // The hash code is always the second field.  Take a peek and figure out which pipe or pipes will be used
-            // then check for enough room in the intended destinations.  If there isn't, return.
+            // The hash code is always the second field.  Take a peek and figure out which pipe or pipes
+            // will be used, then ensure there is enough room in the intended destinations.
+            // If there isn't, return.
             int hashCode = Pipe.peekInt(input, 2);
 
             Pipe targetOutput;
             if (hashCode < 0) {
-                // This is a command that does not have a particular partition, but rather is applicable to all the
-                // machines in a cluster.  Consequently, all the output queues need to be checked for room.
-                // This is done in round robin, skipping any that have a backed up queue.
-                // TODO: Not doing this for now, but I don't think this code means what I think it means...
+                // Deal with a command that does not have a particular partition, but rather is applicable to all the
+                // machines in a cluster.  Check all the output queues to ensure there is room.
+                // Check in round robin fashion skipping any that have a backed up queue.
+                // TOBERESOLVED: Implemented commands are not doing this, but I don't think this code
+                // matches the comments... Rather than all, seems to ensure there is at least one
                 final int original = outputsRoundCursor;
                 do {
                     if (--outputsRoundCursor < 0) {
                         outputsRoundCursor = outputs.length - 1;
                     }
-                } while (outputsRoundCursor != original && !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize));
+                } while (outputsRoundCursor != original &&
+                         !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize));
 
                 if (outputsRoundCursor == original) {
                     // no room was found
@@ -127,36 +134,32 @@ public class RequestEncodeStage extends PronghornStage {
                 targetOutput = outputs[outputsRoundCursor];
             } else {
                 targetOutput = outputs[hashCode % modValue];
-                // If the target pipe can not take this message, then exit.  The invoking facility will be responsible
-                // for sending the message back in to try in a later time slot.
+                // If the target pipe cannot take this message, then exit.
+                // The invoking facility will be responsible for sending the message back to try later.
                 // Note Well: One output message may only be a fragment of the full message to be sent.
-                if (!Pipe.roomToLowLevelWrite(targetOutput, msgSize)) {
+                if (!Pipe.hasRoomForWrite(targetOutput, msgSize)) {
                     return;
                 }
             }
 
-            //output Ring limits must have varLength > 18  to send header and make some progress. >=19
-
+            // LEFT OFF HERE -- Check the connection manager for this.
+            //output Ring limits must have varLength > 18 to send header and make some progress >= 19
             int msgIdx = Pipe.takeMsgIdx(input);
             int correlationId = Pipe.takeValue(input); //this is position 1
             int partitionHash = Pipe.takeValue(input); //this is position 2
+
             //the remaining take field operators are below in the field loop
-
-
-            //TODO: this can be made faster with code generation for every message type, someday in the future...
+            // FUTURE: This can be made faster with code generation for every message type.
             int size = inputFrom.fragScriptSize[msgIdx];
             long msgId = inputFrom.fieldIdScript[msgIdx];
 
-            int bytesCount = Pipe.peekInt(input, size-2);
-            System.err.println("total bytes to write:"+bytesCount+" not counting lengths");
+            int bytesCount = Pipe.peekInt(input, size - 2);
+            System.err.println("total bytes to write:"+ bytesCount +" not counting lengths");
             int maxBytesCount = bytesCount + (size*2); //rough estimate on the  high end
 
             if (maxBytesCount > (targetOutput.maxAvgVarLen-4)) { //4 because we never split a primitive field.
-
                 int parts = 1 + ( maxBytesCount / targetOutput.maxAvgVarLen);
-
                 int limit = (maxBytesCount / parts); //TODO: must finish this split logic later.
-
             }
 
             //gather all the destination variables
@@ -178,14 +181,16 @@ public class RequestEncodeStage extends PronghornStage {
             bytePos = writeInt32(correlationId, bytePos, byteBuffer, byteMask);
             bytePos = writeInt32(partitionHash, bytePos, byteBuffer, byteMask);
 
-            byteBuffer[byteMask & bytePos++] = 13;  //13  2 bytes for data offset
+            byteBuffer[byteMask & bytePos++] = 19;  //13  2 bytes for data offset
             byteBuffer[byteMask & bytePos++] = 0;
 
             bytePos = writeAllFields(msgIdx, size, bytePos, byteBuffer, byteMask); ///TODO: need to add split and continue logic
-
-            //done populate of byte buffer, now set length
-            Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
-
+//            if (bytePos == -1) {
+                //done populate of byte buffer, now set length
+                Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
+                Pipe.publishWrites(targetOutput);
+                return;
+ //           }
         }
     }
 
@@ -236,7 +241,6 @@ public class RequestEncodeStage extends PronghornStage {
                 case TypeMask.ByteArrayOptional:
                 case TypeMask.TextUTF8:
                 case TypeMask.TextUTF8Optional:
-
                     int meta = Pipe.takeRingByteMetaData(input); //for string and byte array
                     int len = Pipe.takeRingByteLen(input);
 
@@ -248,6 +252,7 @@ public class RequestEncodeStage extends PronghornStage {
 
                 break;
                 case TypeMask.Group:
+                    System.out.println("RES: Group: is Close");
                     break;
                 default:
                     throw new UnsupportedOperationException("unknown type "+TokenBuilder.tokenToString(token));

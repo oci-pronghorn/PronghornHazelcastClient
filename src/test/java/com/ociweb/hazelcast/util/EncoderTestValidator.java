@@ -25,7 +25,6 @@ public class EncoderTestValidator<T extends MessageSchema> extends PronghornStag
         StreamingReadVisitor visitor = new StreamingReadVisitorMatcher(expectedInput);
 
         this.reader = new StreamingVisitorReader(checkedInput,  visitor);
-
     }
 
     @Override
@@ -41,6 +40,7 @@ public class EncoderTestValidator<T extends MessageSchema> extends PronghornStag
     @Override
     public void shutdown() {
         reader.shutdown();
+        System.out.println("ETV: Finished and shutdown");
     }
 
 }
