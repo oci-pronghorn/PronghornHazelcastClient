@@ -2,17 +2,18 @@ package com.ociweb.hazelcast.stage;
 
 import static com.ociweb.pronghorn.pipe.Pipe.byteBackingArray;
 import static com.ociweb.pronghorn.pipe.Pipe.bytePosition;
+import static com.ociweb.pronghorn.pipe.Pipe.schemaName;
 
-import com.ociweb.pronghorn.pipe.PipeWriter;
+import com.ociweb.pronghorn.pipe.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
-import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.token.TokenBuilder;
 import com.ociweb.pronghorn.pipe.token.TypeMask;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
+
+import java.nio.ByteBuffer;
 
 public class RequestEncodeStage extends PronghornStage {
 
@@ -24,6 +25,7 @@ public class RequestEncodeStage extends PronghornStage {
     private final int msgSize;
     private final int modValue;
     private int outputsRoundCursor = 0;
+    private StringBuilder tempAppendable = new StringBuilder(256);
 
     private final static long ID_CORRELATIONID = 0x1ffff0;
     private final static long ID_PARTITIONHASH = 0x1fffef;
@@ -35,7 +37,7 @@ public class RequestEncodeStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(RequestEncodeStage.class);
 
 
-    // ToBeResolved: Is this the right place for the config?  Only used for HashKey (that may be enough)
+    // ToBeResolved: Is this the right place for the config?  Only used for HashKey (which may be sufficient to keep)
     protected RequestEncodeStage(GraphManager graphManager, Pipe input, Pipe[] outputs, Configurator config) {
         super(graphManager, input, outputs);
         this.input = input;
@@ -105,7 +107,8 @@ public class RequestEncodeStage extends PronghornStage {
     @Override
     public void run() {
 
-        while (Pipe.hasContentToRead(input, 1)) {
+//        while (Pipe.hasContentToRead(input, 1)) {
+        while (PipeReader.tryReadFragment(input)) {
 
             // The hash code is always the second field.  Take a peek and figure out which pipe or pipes
             // will be used, then ensure there is enough room in the intended destinations.
@@ -125,7 +128,7 @@ public class RequestEncodeStage extends PronghornStage {
                         outputsRoundCursor = outputs.length - 1;
                     }
                 } while (outputsRoundCursor != original &&
-                         !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize));
+                    !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize));
 
                 if (outputsRoundCursor == original) {
                     // no room was found
@@ -142,56 +145,83 @@ public class RequestEncodeStage extends PronghornStage {
                 }
             }
 
-            // LEFT OFF HERE -- Check the connection manager for this.
-            //output Ring limits must have varLength > 18 to send header and make some progress >= 19
+            // output Ring limits must have varLength > 18 to send header and make some progress >= 19
             int msgIdx = Pipe.takeMsgIdx(input);
-            int correlationId = Pipe.takeValue(input); //this is position 1
-            int partitionHash = Pipe.takeValue(input); //this is position 2
 
             //the remaining take field operators are below in the field loop
             // FUTURE: This can be made faster with code generation for every message type.
-            int size = inputFrom.fragScriptSize[msgIdx];
+            if (msgIdx > 5) {
+                System.out.println("invalid msgIdx: " + msgIdx);
+                return;
+            }
             long msgId = inputFrom.fieldIdScript[msgIdx];
 
-            int bytesCount = Pipe.peekInt(input, size - 2);
-            System.err.println("total bytes to write:"+ bytesCount +" not counting lengths");
-            int maxBytesCount = bytesCount + (size*2); //rough estimate on the  high end
-
-            if (maxBytesCount > (targetOutput.maxAvgVarLen-4)) { //4 because we never split a primitive field.
-                int parts = 1 + ( maxBytesCount / targetOutput.maxAvgVarLen);
-                int limit = (maxBytesCount / parts); //TODO: must finish this split logic later.
+            switch ((int) msgId) {
+                case 1537:
+                    encodeSize(msgIdx, targetOutput);
+                    break;
+                default:
+                    System.out.println("Not sure what this is. msgId: " + msgId);
             }
-
-            //gather all the destination variables
-            int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
-            final int startBytePos = bytePos;
-            byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
-            int byteMask = Pipe.blobMask(targetOutput);
-
-            //Hazelcast requires 4 byte length before the packet.  This value is
-            //NOT written here on the front of the packet instead it is in the
-            //fixed length section,  On socket xmit it will be sent first.
-
-            byteBuffer[byteMask & bytePos++] = 1;  //version 1 byte const
-            byteBuffer[byteMask & bytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
-
-            byteBuffer[byteMask & bytePos++] = (byte)(0xFF&msgId); //type 2 bytes (this is the messageId)
-            byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(msgId>>8));
-
-            bytePos = writeInt32(correlationId, bytePos, byteBuffer, byteMask);
-            bytePos = writeInt32(partitionHash, bytePos, byteBuffer, byteMask);
-
-            byteBuffer[byteMask & bytePos++] = 19;  //13  2 bytes for data offset
-            byteBuffer[byteMask & bytePos++] = 0;
-
-            bytePos = writeAllFields(msgIdx, size, bytePos, byteBuffer, byteMask); ///TODO: need to add split and continue logic
-//            if (bytePos == -1) {
-                //done populate of byte buffer, now set length
-                Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
-                Pipe.publishWrites(targetOutput);
-                return;
- //           }
+            PipeReader.releaseReadLock(input);
+            return;
         }
+    }
+
+    void encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput) {
+
+        int size = inputFrom.fragScriptSize[msgIdx];
+
+        int bytesCount = Pipe.peekInt(input, size - 2);
+        System.err.println("total bytes to write:"+ bytesCount +" not counting lengths");
+
+        int maxBytesCount = bytesCount + (size * 2);                // rough estimate on the  high end
+        if (maxBytesCount > (targetOutput.maxAvgVarLen - 4)) {      // use 4 because we never split a primitive field.
+            int parts = 1 + (maxBytesCount / targetOutput.maxAvgVarLen);
+            int limit = (maxBytesCount / parts);                    // TODO: must finish this split logic later.
+        }
+
+        //gather all the destination variables
+        int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
+        final int startBytePos = bytePos;
+        byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
+        int byteMask = Pipe.blobMask(targetOutput);
+
+        //Hazelcast requires 4 byte length before the packet.  This value is
+        //NOT written here on the front of the packet instead it is in the
+        //fixed length section,  On socket xmit it will be sent first.
+
+        byteBuffer[byteMask & bytePos++] = 1;  //version 1 byte const
+        byteBuffer[byteMask & bytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
+
+        long msgId = 1537;
+        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&msgId); //type 2 bytes (this is the messageId)
+        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(msgId>>8));
+
+        // int correlationId = Pipe.takeValue(input);
+        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_CORRELATIONID_2097136);
+        bytePos = writeInt32(correlationId, bytePos, byteBuffer, byteMask);
+
+        // int partitionHash = Pipe.takeValue(input); //this is position 2
+        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135);
+        bytePos = writeInt32(partitionHash, bytePos, byteBuffer, byteMask);
+
+        byteBuffer[byteMask & bytePos++] = 19;  //13  2 bytes for data offset
+        byteBuffer[byteMask & bytePos++] = 0;
+
+        // bytePos = writeAllFields(msgIdx, size, bytePos, byteBuffer, byteMask); ///TODO: need to add split and continue logic
+        tempAppendable.setLength(0);
+        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_NAME_458497, tempAppendable);
+        int len = tempAppendable.length();
+        bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);
+        System.arraycopy(tempAppendable.toString().getBytes(), 0, byteBuffer, bytePos, len);
+        bytePos += len;
+
+        //done populate of byte buffer, now set length
+        Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
+        Pipe.publishWrites(targetOutput);
+        PipeReader.releaseReadLock(input);
+        return;
     }
 
     private int writeInt32(int value, int bytePos, byte[] byteBuffer, int byteMask) {
@@ -202,64 +232,4 @@ public class RequestEncodeStage extends PronghornStage {
         return bytePos;
     }
 
-    private int writeAllFields(int msgIdx, int size, int bytePos, byte[] byteBuffer, int byteMask) {
-        int i = 3;//NOTE: we assume that we have already read the correlation and partition
-        while (i<size) {
-            int idx = msgIdx+i;
-            int token = inputFrom.tokens[idx];
-            int type = TokenBuilder.extractType(token);
-
-            switch(type) {
-                case TypeMask.IntegerSigned:
-                case TypeMask.IntegerSignedOptional:
-                case TypeMask.IntegerUnsigned:
-                case TypeMask.IntegerUnsignedOptional:
-                    bytePos = writeInt32(Pipe.takeValue(input), bytePos, byteBuffer, byteMask);
-                break;
-                case TypeMask.LongSigned:
-                case TypeMask.LongSignedOptional:
-                case TypeMask.LongUnsigned:
-                case TypeMask.LongUnsignedOptional:
-
-                    long int64Value = Pipe.takeLong(input);//for int64
-
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value));
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>8));
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>16));
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>24));
-
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>32));
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>40));
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>48));
-                    byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(int64Value>>56));
-
-                break;
-                case TypeMask.TextASCII:
-                case TypeMask.TextASCIIOptional:
-                    throw new UnsupportedOperationException("All text for Hazelcast MUST be UTF8 encoded not ASCII");
-                case TypeMask.ByteArray:
-                case TypeMask.ByteArrayOptional:
-                case TypeMask.TextUTF8:
-                case TypeMask.TextUTF8Optional:
-                    int meta = Pipe.takeRingByteMetaData(input); //for string and byte array
-                    int len = Pipe.takeRingByteLen(input);
-
-                    bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);
-
-                    Pipe.copyBytesFromToRing(byteBuffer, bytePos, byteMask,
-                            byteBackingArray(meta, input), bytePosition(meta, input, len), Pipe.blobMask(input), len);
-                    bytePos += len;
-
-                break;
-                case TypeMask.Group:
-                    System.out.println("RES: Group: is Close");
-                    break;
-                default:
-                    throw new UnsupportedOperationException("unknown type "+TokenBuilder.tokenToString(token));
-
-            }
-            i += TypeMask.scriptTokenSize[type];
-        }
-        return bytePos;
-    }
 }

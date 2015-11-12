@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 public class SetEncoderTest {
 
     private final long seed = 43L;
-    private final int iterations = 2;
+    private final int iterations = 1;
 
 
     @Test
