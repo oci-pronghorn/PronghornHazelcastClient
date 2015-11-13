@@ -134,10 +134,37 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("visitUTF8 name :" + name);
         System.out.println("visitUTF8 id:" + id);
         System.out.println("visitUTF8 value:" + value);
-        int len = value.toString().length();
-        bytePos = writeInt32(len, bytePos, outBuffer, byteMask);
+        /*
         System.arraycopy(value.toString().getBytes(), 0, outBuffer, bytePos, len);
         bytePos += len;
+        */
+        ///
+        int len = value.toString().length();
+        bytePos = writeInt32(len, bytePos, outBuffer, byteMask);
+        int c = 0;
+        // Left off here -- read a UTF8 out of the pipe, I should just be able to write a utf back in ... am I not releasing?
+        while (c < len) {
+            bytePos = Pipe.encodeSingleChar((int) value.toString().charAt(c++), outBuffer, byteMask, bytePos);
+        }
+/*
+        public static void writeUTF8Message(Pipe ring, boolean isNullable, String columnName, Object value) {
+            writeNullableMessage(ring, (columnName == null) ? MetaMessageDefs.MSG_NULLABLEUTF8_LOC : MetaMessageDefs.MSG_NAMEDNULLABLEUTF8_LOC, isNullable, columnName, value);
+            if (value != null) {
+                int msg = (columnName == null) ? MetaMessageDefs.MSG_UTF8_LOC : MetaMessageDefs.MSG_NAMEDUTF8_LOC;
+                Pipe.blockWriteMessage(ring, msg);
+                if (columnName != null) {
+                    Pipe.validateVarLength(ring, columnName.length());
+                    int sourceLen = columnName.length();
+                    final int p = Pipe.copyASCIIToBytes(columnName, 0, sourceLen, ring);
+                    Pipe.addBytePosAndLen(ring, p, sourceLen);
+                }
+                CharSequence source = (String) value;
+                Pipe.validateVarLength(ring, source.length()<<3);//UTF8 encoded bytes are longer than the char count (6 is the max but math for 8 is cheaper)
+                Pipe.addBytePosAndLen(ring, Pipe.bytesWorkingHeadPosition(ring), Pipe.copyUTF8ToByte(source, source.length(), ring));
+                Pipe.publishWrites(ring);
+            }
+        }
+        */
 	}
 
 	@Override

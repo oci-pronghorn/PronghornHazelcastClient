@@ -21,10 +21,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class SetEncoderTest {
 
-    private final long seed = 43L;
-    private final int iterations = 1;
-
-
+    @Ignore
     @Test
     public void setApiTest() {
 
@@ -34,27 +31,30 @@ public class SetEncoderTest {
         // FIXME: The HazelcastRequestsSchema needs to be regenerated.  It's currently using the minimal set of requests
 
         // Create Generator Stage (from Pronghorn Pipes).
-        PipeConfig hzReqConfig = new PipeConfig(HazelcastRequestsSchema.instance, 5, 256);
+        PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 256);
         Pipe<HazelcastRequestsSchema> generatorPipe = new Pipe<>(hzReqConfig);
-        PronghornStage generator = new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
+
+        long seed = 43L;
+        int iterations = 1;
+        new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
 
         // Create Splitter w/Pipes.
         Pipe<HazelcastRequestsSchema> pipeToExpecteds = new Pipe<>(hzReqConfig.grow2x());
         Pipe<HazelcastRequestsSchema> pipeToEncoder = new Pipe<>(hzReqConfig.grow2x());
-        SplitterStage<HazelcastRequestsSchema> splitter = new SplitterStage(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
+        new SplitterStage<>(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
 
         // Create Encoder w/Pipes.
-        PipeConfig rawBytes = new PipeConfig(RawDataSchema.instance, 5, 512);
-        Pipe[] encoderToValidator = new Pipe[1];
-        encoderToValidator[0] = new Pipe(rawBytes);
+        PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 512);
+        Pipe<RawDataSchema>[] encoderToValidator = new Pipe[1];
+        encoderToValidator[0] = new Pipe<>(rawBytes);
         // RequestEncodeStage is the class under test.
         new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator());
 
         // Create the class to build the expected test values
-        Pipe expectedMessagesToValidatorPipe = new Pipe(rawBytes);
+        Pipe<RawDataSchema> expectedMessagesToValidatorPipe = new Pipe<>(rawBytes);
         new ExpectedEncoderMessageBuilder(gm, pipeToExpecteds, expectedMessagesToValidatorPipe);
 
-        PronghornStage validate = new EncoderTestValidator<RawDataSchema>(gm, expectedMessagesToValidatorPipe, encoderToValidator[0]);
+        new EncoderTestValidator<>(gm, expectedMessagesToValidatorPipe, encoderToValidator[0]);
 
         MonitorConsoleStage.attach(gm);
 
