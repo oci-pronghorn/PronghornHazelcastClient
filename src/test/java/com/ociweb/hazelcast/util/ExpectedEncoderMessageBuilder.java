@@ -35,9 +35,6 @@ public class ExpectedEncoderMessageBuilder extends PronghornStage {
         // Ensure all messages must have the 0x1ffff0 CorrelationID and 0x1fffef PartitionHash in the expected position.
         assert(expectedFieldPositions(Pipe.from(input))) : "The CorrelationId and PartitionHash must be in the first and second position for all messages";
 
-        // TODO: Keep? This is not as necessary as it was pre-generics.
-        assert(expectedFrom(output, FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for output.";
-
         StreamingReadVisitor visitor = new RequestEncoderTestVisitor(output);
         this.reader = new StreamingVisitorReader(input,  visitor);
     }

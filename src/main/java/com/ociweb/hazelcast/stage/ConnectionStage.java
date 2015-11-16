@@ -10,7 +10,6 @@ import com.ociweb.pronghorn.pipe.RawDataSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
@@ -42,13 +41,8 @@ public class ConnectionStage extends PronghornStage {
     private ByteBuffer inputSocketBuffer;
 
     private static final int msgIdx = 0;
-    private static final int msgSize = FieldReferenceOffsetManager.RAW_BYTES.fragDataSize[msgIdx]; //we only send one kind of message (packets to be sent)
-
 
     private StringBuilder authResponse = new StringBuilder(128);
-    private int authAddrLength;
-    private int authUUIDLength;
-    private int authUUIDLengthOwner;
 
 
     protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RawDataSchema> output, Configurator conf) {
@@ -56,8 +50,6 @@ public class ConnectionStage extends PronghornStage {
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = output;
         this.conf = conf;
-
-        assert(Pipe.from(inputMessagesToSend).equals(FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for input.";
     }
 
     @Override
@@ -224,7 +216,7 @@ public class ConnectionStage extends PronghornStage {
 
                 //low level read.
 
-                while (Pipe.hasContentToRead(inputMessagesToSend, msgSize)) {
+                while (Pipe.hasContentToRead(inputMessagesToSend)) {
                     //is there stuff to send, send it.
 
                     int msgIdx = Pipe.takeMsgIdx(inputMessagesToSend);
@@ -273,7 +265,7 @@ public class ConnectionStage extends PronghornStage {
                 //first check if its bigger than the smallest frame size then check that we have the full frame
                 if (inputSocketBuffer.position()>=18 &&
                     isFrameFullyFilled(inputSocketBuffer) &&
-                    Pipe.roomToLowLevelWrite(outputMessagesReceived, msgSize)) {
+                    Pipe.hasRoomForWrite(outputMessagesReceived)) {
 
                     inputSocketBuffer.flip(); //we are committed to reading the frame at this point
                     ByteBuffer targetBuffer = inputSocketBuffer;
@@ -313,7 +305,7 @@ public class ConnectionStage extends PronghornStage {
                             //Address
                             int oldPos = pos;
                             pos = readText(targetBuffer, pos, authResponse, frameStop);
-                            authAddrLength = pos-oldPos;
+                            int authAddrLength = pos - oldPos;
 
                             int someNumber = readInt32(targetBuffer, pos);
                             pos+=4;
@@ -321,32 +313,26 @@ public class ConnectionStage extends PronghornStage {
                             //read Text UUID
                             oldPos = pos;
                             pos = readText(targetBuffer, pos, authResponse, frameStop);
-                            authUUIDLength = pos-oldPos;
+                            int authUUIDLength = pos-oldPos;
 
                             //read Text UUIDOwner
                             oldPos = pos;
                             pos = readText(targetBuffer, pos, authResponse, frameStop); //TODO: if the only consumer wants this in UTF8 we may want to store it as is.
-                            authUUIDLengthOwner = pos-oldPos;
+                            int authUUIDLengthOwner = pos-oldPos;
 
                             System.err.println("AUTH:"+ authResponse+" "+someNumber);
                             isAuthenticated = true;
 
                         break;
-                        //Add support for Ping response here
 
-
-
-
+                        // TODO: Add support for Ping response here
 
                         default:
                              assert(isAuthenticated);
-                             //Send to decode stage
-                             int unusedFragmentDataSize = Pipe.addMsgIdx(outputMessagesReceived, msgIdx);
+                             int size = Pipe.addMsgIdx(outputMessagesReceived, msgIdx);
                              Pipe.addByteBuffer(targetBuffer, frameSize, outputMessagesReceived);
                              Pipe.publishWrites(outputMessagesReceived);
-
-                             Pipe.confirmLowLevelWrite(outputMessagesReceived, msgSize);
-
+                             Pipe.confirmLowLevelWrite(outputMessagesReceived, size);
                     }
 
                     if (frameStop>=targetBuffer.limit()) {

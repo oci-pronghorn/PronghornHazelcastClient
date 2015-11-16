@@ -1,19 +1,11 @@
 package com.ociweb.hazelcast.stage;
 
-import static com.ociweb.pronghorn.pipe.Pipe.byteBackingArray;
-import static com.ociweb.pronghorn.pipe.Pipe.bytePosition;
-import static com.ociweb.pronghorn.pipe.Pipe.schemaName;
-
 import com.ociweb.pronghorn.pipe.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.ociweb.pronghorn.pipe.token.TokenBuilder;
-import com.ociweb.pronghorn.pipe.token.TypeMask;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
-
-import java.nio.ByteBuffer;
 
 public class RequestEncodeStage extends PronghornStage {
 
@@ -22,7 +14,6 @@ public class RequestEncodeStage extends PronghornStage {
     private final Configurator config;
     private Pipe[] indexedOutputs;
     private FieldReferenceOffsetManager inputFrom;
-    private final int msgSize;
     private final int modValue;
     private int outputsRoundCursor = 0;
     private StringBuilder tempAppendable = new StringBuilder(256);
@@ -47,10 +38,6 @@ public class RequestEncodeStage extends PronghornStage {
         // FIXME: Put a real value here -- ditto for ExpectedCreator stage
         this.modValue = 1;
         this.inputFrom = Pipe.from(input);
-        //we only send one kind of message (packets to be sent)
-        this.msgSize = FieldReferenceOffsetManager.RAW_BYTES.fragDataSize[0];
-
-
     }
 
     private boolean expectedFieldPositions(FieldReferenceOffsetManager from) {
@@ -88,11 +75,6 @@ public class RequestEncodeStage extends PronghornStage {
 
     @Override
     public void startup() {
-        // ToBeResolved: Are the following checks even a good idea anymore?
-        //assert that all message have the 0x1ffff0 CorrelationID and 0x1fffef PartitionHash are in the expected position.
-        assert(expectedFieldPositions(inputFrom)) : "The CorrelationId and PartitionHash must be in the first and second position for all messages";
-        assert(expectedFrom(outputs, FieldReferenceOffsetManager.RAW_BYTES)) : "Expected simple raw bytes for output.";
-
         // Reorder the pipes so they line up with the hashed mod for easy sending of packets to the right node.
         int i = outputs.length;
         indexedOutputs = new Pipe[i];
@@ -128,7 +110,7 @@ public class RequestEncodeStage extends PronghornStage {
                         outputsRoundCursor = outputs.length - 1;
                     }
                 } while (outputsRoundCursor != original &&
-                    !Pipe.roomToLowLevelWrite(outputs[outputsRoundCursor], msgSize));
+                    !Pipe.hasRoomForWrite(outputs[outputsRoundCursor]));
 
                 if (outputsRoundCursor == original) {
                     // no room was found
@@ -140,7 +122,7 @@ public class RequestEncodeStage extends PronghornStage {
                 // If the target pipe cannot take this message, then exit.
                 // The invoking facility will be responsible for sending the message back to try later.
                 // Note Well: One output message may only be a fragment of the full message to be sent.
-                if (!Pipe.hasRoomForWrite(targetOutput, msgSize)) {
+                if (!Pipe.hasRoomForWrite(targetOutput)) {
                     return;
                 }
             }
