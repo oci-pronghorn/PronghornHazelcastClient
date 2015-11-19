@@ -81,23 +81,19 @@ public class RequestEncodeStage extends PronghornStage {
         while (--i >= 0) {
             indexedOutputs[config.getHashKeyForRingId(outputs[i].ringId)] = outputs[i];
         }
-        // TODO(nrt): review the FROM and build an index rule for where to find the key at runtime for every message
-
         // TODO(cas): This is where the modValue will be set to reflect the number of machines in the cluster.
     }
 
     @Override
     public void run() {
 
-//        while (Pipe.hasContentToRead(input, 1)) {
         while (PipeReader.tryReadFragment(input)) {
-
-            // The hash code is always the second field.  Take a peek and figure out which pipe or pipes
+            // The hash code is always the second field.  Use it to figure out which pipe or pipes
             // will be used, then ensure there is enough room in the intended destinations.
             // If there isn't, return.
             int hashCode = Pipe.peekInt(input, 2);
 
-            Pipe targetOutput;
+            Pipe<RawDataSchema> targetOutput;
             if (hashCode < 0) {
                 // Deal with a command that does not have a particular partition, but rather is applicable to all the
                 // machines in a cluster.  Check all the output queues to ensure there is room.
@@ -130,32 +126,154 @@ public class RequestEncodeStage extends PronghornStage {
             // output Ring limits must have varLength > 18 to send header and make some progress >= 19
             int msgIdx = Pipe.takeMsgIdx(input);
 
-            //the remaining take field operators are below in the field loop
             // FUTURE: This can be made faster with code generation for every message type.
+            // The remaining take field operators are below in the field loop
             if (msgIdx > 5) {
                 System.out.println("invalid msgIdx: " + msgIdx);
                 return;
             }
             long msgId = inputFrom.fieldIdScript[msgIdx];
 
+            //gather all the destination variables
+            int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
+            final int startBytePos = bytePos;
+            byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
+            int byteMask = Pipe.blobMask(targetOutput);
+
             switch ((int) msgId) {
-                case 1537:
-                    encodeSize(msgIdx, targetOutput);
+                // Size
+                case 0x0601:
+                    bytePos = encodeSize(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
                     break;
+
+                // Contains
+                case 0x0602:
+                    bytePos = encodeContains(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // ContainsAll
+                case 0x0603:
+                    encodeContainsAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // Add
+                case 0x0604:
+                    encodeAdd(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // Remove
+                case 0x0605:
+                    encodeRemove(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // AddAll
+                case 0x0606:
+                    encodeAddAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // CompareAndRemoveAll
+                case 0x0607:
+                    encodeCompareAndRemoveAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // CompareAndRetainAll
+                case 0x0608:
+                    encodeCompareAndRetainAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // Clear
+                case 0x0609:
+                    encodeClear(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // GetAll
+                case 0x060a:
+                    encodeGetAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // AddListener
+                case 0x060b:
+                    encodeAddListener(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // RemoveListener
+                case 0x060c:
+                    encodeRemoveListener(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
+                // IsEmpty
+                case 0x060d:
+                    encodeIsEmpty(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    break;
+
                 default:
                     System.out.println("Not sure what this is. msgId: " + msgId);
+                    return;
             }
+            finishWriteToOutputPipe(targetOutput, startBytePos, bytePos - startBytePos);
             PipeReader.releaseReadLock(input);
             return;
         }
     }
 
-    void encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput) {
+    private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_CORRELATIONID_2097136);
+        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135);
+        bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
+        tempAppendable.setLength(0);
+        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_NAME_458497, tempAppendable);
+        return writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
+    }
 
+    private int encodeContains(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136);
+        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135);
+        bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
+        // LEFT OFF HERE -- -just have the PipeReader put the bytes directly into the buffer area
+        // PipeReader.readBytes(input, HazelcastRequestsSchema.MSG,
+        return bytePos;
+    }
+
+    private void encodeContainsAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeAdd(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeRemove(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeAddAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeCompareAndRemoveAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeCompareAndRetainAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeClear(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeGetAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeAddListener(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeRemoveListener(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private void encodeIsEmpty(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+
+    private int beginWriteToOutputPipe(int msgIdx, Pipe<RawDataSchema> targetOutput, int bytePos, byte[] byteBuffer,
+            int byteMask, int correlationId, int partitionHash) {
         int size = inputFrom.fragScriptSize[msgIdx];
 
         int bytesCount = Pipe.peekInt(input, size - 2);
-        System.err.println("total bytes to write:"+ bytesCount +" not counting lengths");
+        System.err.println("total bytes to write:" + bytesCount + " not counting lengths");
 
         int maxBytesCount = bytesCount + (size * 2);                // rough estimate on the  high end
         if (maxBytesCount > (targetOutput.maxAvgVarLen - 4)) {      // use 4 because we never split a primitive field.
@@ -163,47 +281,42 @@ public class RequestEncodeStage extends PronghornStage {
             int limit = (maxBytesCount / parts);                    // TODO: must finish this split logic later.
         }
 
-        //gather all the destination variables
-        int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
-        final int startBytePos = bytePos;
-        byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
-        int byteMask = Pipe.blobMask(targetOutput);
-
         //Hazelcast requires 4 byte length before the packet.  This value is
         //NOT written here on the front of the packet instead it is in the
         //fixed length section,  On socket xmit it will be sent first.
-
         byteBuffer[byteMask & bytePos++] = 1;  //version 1 byte const
         byteBuffer[byteMask & bytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
 
         long msgId = 1537;
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&msgId); //type 2 bytes (this is the messageId)
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(msgId>>8));
+        byteBuffer[byteMask & bytePos++] = (byte) (0xFF & msgId); //type 2 bytes (this is the messageId)
+        byteBuffer[byteMask & bytePos++] = (byte) (0xFF & (msgId >> 8));
 
-        // int correlationId = Pipe.takeValue(input);
-        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_CORRELATIONID_2097136);
         bytePos = writeInt32(correlationId, bytePos, byteBuffer, byteMask);
 
-        // int partitionHash = Pipe.takeValue(input); //this is position 2
-        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135);
         bytePos = writeInt32(partitionHash, bytePos, byteBuffer, byteMask);
 
         byteBuffer[byteMask & bytePos++] = 19;  //13  2 bytes for data offset
         byteBuffer[byteMask & bytePos++] = 0;
+        return bytePos;
+    }
 
-        // bytePos = writeAllFields(msgIdx, size, bytePos, byteBuffer, byteMask); ///TODO: need to add split and continue logic
-        tempAppendable.setLength(0);
-        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_NAME_458497, tempAppendable);
-        int len = tempAppendable.length();
-        bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);
-        System.arraycopy(tempAppendable.toString().getBytes(), 0, byteBuffer, bytePos, len);
-        bytePos += len;
-
+    private void finishWriteToOutputPipe(Pipe<RawDataSchema> targetOutput, int startBytePos, int len) {
         //done populate of byte buffer, now set length
-        Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, bytePos-startBytePos);
+        Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, len);
         Pipe.publishWrites(targetOutput);
         PipeReader.releaseReadLock(input);
         return;
+    }
+
+    private int writeUTFToByteBuffer(int bytePos, byte[] byteBuffer, int byteMask) {
+        int len = tempAppendable.length();
+        bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);
+        byte[] source = tempAppendable.toString().getBytes();
+        int c = 0;
+        while (c < len) {
+            bytePos = Pipe.encodeSingleChar((int) source[c++], byteBuffer, byteMask, bytePos);
+        }
+        return bytePos;
     }
 
     private int writeInt32(int value, int bytePos, byte[] byteBuffer, int byteMask) {
