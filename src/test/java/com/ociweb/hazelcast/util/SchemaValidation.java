@@ -15,8 +15,6 @@ public class SchemaValidation {
 
     @Test
     public void hzRequestFROMTest() {
-        System.out.println("Current directory is:" + Paths.get(".").toAbsolutePath().normalize().toString());
-        System.out.println("Classloader path:" + Arrays.toString(((URLClassLoader) (Thread.currentThread().getContextClassLoader())).getURLs()));
         assertTrue(FROMValidation.testForMatchingFROMs("/HazelcastSetRequests.xml", "FROM", HazelcastRequestsSchema.FROM));
     };
 

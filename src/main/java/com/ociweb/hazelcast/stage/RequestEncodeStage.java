@@ -229,8 +229,8 @@ public class RequestEncodeStage extends PronghornStage {
         int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136);
         int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135);
         bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
-        // LEFT OFF HERE -- -just have the PipeReader put the bytes directly into the buffer area
-        // PipeReader.readBytes(input, HazelcastRequestsSchema.MSG,
+        PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_NAME_458497, byteBuffer, bytePos);
+        PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_VALUE_458498, byteBuffer, bytePos);
         return bytePos;
     }
 

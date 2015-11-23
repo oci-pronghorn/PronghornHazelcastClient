@@ -21,14 +21,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class SetEncoderTest {
 
-    @Ignore
     @Test
     public void setApiTest() {
 
         GraphManager gm = new GraphManager();
-
-        // TODO: Figure out the real min and max for these
-        // FIXME: The HazelcastRequestsSchema needs to be regenerated.  It's currently using the minimal set of requests
 
         // Create Generator Stage (from Pronghorn Pipes).
         PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 256);
@@ -62,7 +58,7 @@ public class SetEncoderTest {
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-        scheduler.awaitTermination(3, TimeUnit.SECONDS);
+        scheduler.awaitTermination(30, TimeUnit.SECONDS);
         System.out.println("finished running test");
     }
 }
