@@ -123,38 +123,26 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
     @Override
     public Appendable targetUTF8(String name, long id) {
-        System.out.println("targetUTF8 name :" + name);
-        System.out.println("targetUTF8 id:" + name);
+        System.out.println("targetUTF8 name:" + name);
+        System.out.println("targetUTF8 id:" + id);
         tempStringBuilder.setLength(0);
         return tempStringBuilder;
     }
 
     @Override
 	public void visitUTF8(String name, long id, Appendable value) {
-        System.out.println("TOICA: visitUTF8 name :" + name);
+        System.out.println("TOICA: visitUTF8 name:" + name);
         System.out.println("TOICA: visitUTF8 id:" + id);
         System.out.println("TOICA: visitUTF8 value:" + value);
 
         int len = value.toString().length();
         System.out.println("TOICA: visitUTF8 value length:" + len);
         bytePos = writeInt32(len, bytePos, outBuffer, byteMask);
-//        Pipe.copyBytesFromToRing(value.toString().getBytes(), 0, Integer.MAX_VALUE, outBuffer, bytePos, byteMask, len);
-//        bytePos += len;
-//                         copyUTF8ToByte(CharSequence source, int sourceIdx, byte[] target, int targetMask, int targetIdx, int charCount)
-//        int written = Pipe.copyUTF8ToByte(value.toString().getBytes(), 0, outBuffer, byteMask, bytePos, len);
         byte[] source = value.toString().getBytes();
         int c = 0;
         while (c < len) {
             bytePos = Pipe.encodeSingleChar((int) source[c++], outBuffer, byteMask, bytePos);
         }
-
-        ///
-        /*
-        int c = 0;
-        while (c < len) {
-            bytePos = Pipe.encodeSingleChar((int) value.toString().charAt(c++), outBuffer, byteMask, bytePos);
-        }
-        */
 	}
 
 	@Override

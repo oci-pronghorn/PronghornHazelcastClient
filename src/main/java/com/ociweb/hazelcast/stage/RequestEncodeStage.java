@@ -9,24 +9,24 @@ import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class RequestEncodeStage extends PronghornStage {
 
-    private final Pipe input;
+    private final Pipe   input;
     private final Pipe[] outputs;
-    private final Configurator config;
     private Pipe[] indexedOutputs;
-    private FieldReferenceOffsetManager inputFrom;
+
+    private final Configurator config;
     private final int modValue;
+    private FieldReferenceOffsetManager inputFrom;
     private int outputsRoundCursor = 0;
     private StringBuilder tempAppendable = new StringBuilder(256);
 
     private final static long ID_CORRELATIONID = 0x1ffff0;
     private final static long ID_PARTITIONHASH = 0x1fffef;
-    private final static int OFFSET_CORRELATIONID = 1;//ALL MESSAGES MUST HAVE THESE TWO POSITIONS.
-    private final static int OFFSET_PARTITIONHASH = 2;//NOTE:CODE ASSUMES THESE TWO ARE FIRST SO STARTS FIELDS AT 3
+    private final static int  OFFSET_CORRELATIONID = 1;  // All messages must have these two positions.
+    private final static int  OFFSET_PARTITIONHASH = 2;  // Note: the code assumes these two are first so starts fields at 3
     private final static byte BIT_FLAG_START = (byte)0x80;
     private final static byte BIT_FLAG_END = (byte)0x40;
 
     private final static Logger log = LoggerFactory.getLogger(RequestEncodeStage.class);
-
 
     // ToBeResolved: Is this the right place for the config?  Only used for HashKey (which may be sufficient to keep)
     protected RequestEncodeStage(GraphManager graphManager, Pipe input, Pipe[] outputs, Configurator config) {
@@ -87,7 +87,7 @@ public class RequestEncodeStage extends PronghornStage {
     @Override
     public void run() {
 
-        while (PipeReader.tryReadFragment(input)) {
+        while (Pipe.hasContentToRead(input)) {
             // The hash code is always the second field.  Use it to figure out which pipe or pipes
             // will be used, then ensure there is enough room in the intended destinations.
             // If there isn't, return.
@@ -115,6 +115,7 @@ public class RequestEncodeStage extends PronghornStage {
                 targetOutput = outputs[outputsRoundCursor];
             } else {
                 targetOutput = outputs[hashCode % modValue];
+                // Output Ring limits must have varLength > 18 to send header and make some progress >= 19
                 // If the target pipe cannot take this message, then exit.
                 // The invoking facility will be responsible for sending the message back to try later.
                 // Note Well: One output message may only be a fragment of the full message to be sent.
@@ -123,118 +124,143 @@ public class RequestEncodeStage extends PronghornStage {
                 }
             }
 
-            // output Ring limits must have varLength > 18 to send header and make some progress >= 19
-            int msgIdx = Pipe.takeMsgIdx(input);
+            final int msgIdx = Pipe.takeMsgIdx(input);
 
             // FUTURE: This can be made faster with code generation for every message type.
-            // The remaining take field operators are below in the field loop
             if (msgIdx > 5) {
                 System.out.println("invalid msgIdx: " + msgIdx);
                 return;
             }
-            long msgId = inputFrom.fieldIdScript[msgIdx];
+
+            long inputMsgId = inputFrom.fieldIdScript[msgIdx];
 
             //gather all the destination variables
-            int bytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
-            final int startBytePos = bytePos;
-            byte[] byteBuffer = Pipe.byteBuffer(targetOutput);
-            int byteMask = Pipe.blobMask(targetOutput);
+            int outputBytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
+            final int startOutputBytePos = outputBytePos;
+            byte[] outputByteBuffer = Pipe.byteBuffer(targetOutput);
+            int outputByteMask = Pipe.blobMask(targetOutput);
 
-            switch ((int) msgId) {
+            switch ((int) inputMsgId) {
                 // Size
                 case 0x0601:
-                    bytePos = encodeSize(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    outputBytePos = encodeSize(inputMsgId, msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Contains
                 case 0x0602:
-                    bytePos = encodeContains(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    outputBytePos = encodeContains(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // ContainsAll
                 case 0x0603:
-                    encodeContainsAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    outputBytePos = encodeContainsAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Add
                 case 0x0604:
-                    encodeAdd(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeAdd(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Remove
                 case 0x0605:
-                    encodeRemove(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeRemove(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // AddAll
                 case 0x0606:
-                    encodeAddAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeAddAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // CompareAndRemoveAll
                 case 0x0607:
-                    encodeCompareAndRemoveAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeCompareAndRemoveAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // CompareAndRetainAll
                 case 0x0608:
-                    encodeCompareAndRetainAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeCompareAndRetainAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Clear
                 case 0x0609:
-                    encodeClear(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeClear(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // GetAll
                 case 0x060a:
-                    encodeGetAll(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeGetAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // AddListener
                 case 0x060b:
-                    encodeAddListener(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeAddListener(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // RemoveListener
                 case 0x060c:
-                    encodeRemoveListener(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeRemoveListener(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // IsEmpty
                 case 0x060d:
-                    encodeIsEmpty(msgIdx, targetOutput, bytePos, byteBuffer, byteMask);
+                    encodeIsEmpty(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 default:
-                    System.out.println("Not sure what this is. msgId: " + msgId);
+                    System.out.println("Not sure what this is. inputMsgId: " + inputMsgId);
                     return;
             }
-            finishWriteToOutputPipe(targetOutput, startBytePos, bytePos - startBytePos);
-            PipeReader.releaseReadLock(input);
+
+            finishWriteToOutputPipe(targetOutput, startOutputBytePos, outputBytePos - startOutputBytePos);
+            Pipe.confirmLowLevelRead(input, Pipe.sizeOf(input, msgIdx));
+            Pipe.releaseReads(input);
             return;
         }
     }
 
-    private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
-        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_CORRELATIONID_2097136);
-        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135);
-        bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
-        tempAppendable.setLength(0);
-        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_NAME_458497, tempAppendable);
-        return writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
+    private int encodeSize(long msgId, int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        int correlationId = Pipe.takeValue(input);
+        int partitionHash = Pipe.takeValue(input);
+        outputBytePos = beginWriteToOutputPipe(msgId, msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
+
+        int sourceMetaData = Pipe.takeRingByteMetaData(input);
+        int sourceFieldLength = Pipe.takeRingByteLen(input);
+        int sourceByteMask = Pipe.blobMask(input);
+        byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+        int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
+
+        outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+        Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+        return outputBytePos + sourceFieldLength;
     }
 
     private int encodeContains(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+        /*
         int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136);
         int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135);
         bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
-        PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_NAME_458497, byteBuffer, bytePos);
-        PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_VALUE_458498, byteBuffer, bytePos);
-        return bytePos;
+        tempAppendable.setLength(0);
+        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_NAME_458497, tempAppendable);
+        bytePos = writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
+        int len = PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_VALUE_458498, byteBuffer, bytePos, byteMask);
+        return bytePos + len;
+        */
+        return 0;
     }
 
-    private void encodeContainsAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    private int encodeContainsAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+        /*
+        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_CORRELATIONID_2097136);
+        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_PARTITIONHASH_2097135);
+        bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
+        tempAppendable.setLength(0);
+        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_NAME_458497, tempAppendable);
+        bytePos = writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
+        int len = PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_VALUESET_458499, byteBuffer, bytePos, byteMask);
+
+        return bytePos + len;
+        */
+        return 0;
     }
 
     private void encodeAdd(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
@@ -268,12 +294,11 @@ public class RequestEncodeStage extends PronghornStage {
     }
 
 
-    private int beginWriteToOutputPipe(int msgIdx, Pipe<RawDataSchema> targetOutput, int bytePos, byte[] byteBuffer,
-            int byteMask, int correlationId, int partitionHash) {
+    private int beginWriteToOutputPipe(long msgId, int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask,
+                                       int correlationId, int partitionHash) {
         int size = inputFrom.fragScriptSize[msgIdx];
-
         int bytesCount = Pipe.peekInt(input, size - 2);
-        System.err.println("total bytes to write:" + bytesCount + " not counting lengths");
+        System.err.println("Total variable bytes to write:" + bytesCount + " not counting lengths");
 
         int maxBytesCount = bytesCount + (size * 2);                // rough estimate on the  high end
         if (maxBytesCount > (targetOutput.maxAvgVarLen - 4)) {      // use 4 because we never split a primitive field.
@@ -281,30 +306,28 @@ public class RequestEncodeStage extends PronghornStage {
             int limit = (maxBytesCount / parts);                    // TODO: must finish this split logic later.
         }
 
-        //Hazelcast requires 4 byte length before the packet.  This value is
-        //NOT written here on the front of the packet instead it is in the
-        //fixed length section,  On socket xmit it will be sent first.
-        byteBuffer[byteMask & bytePos++] = 1;  //version 1 byte const
-        byteBuffer[byteMask & bytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
+        // Hazelcast requires 4 byte length before the packet.  This value is NOT written here on the front of the
+        // packet instead it is in the fixed length section,  On socket transmit it will be sent first.
+        outputByteBuffer[outputByteMask & outputBytePos++] = 1;  //version 1 byte const
+        outputByteBuffer[outputByteMask & outputBytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
 
-        long msgId = 1537;
-        byteBuffer[byteMask & bytePos++] = (byte) (0xFF & msgId); //type 2 bytes (this is the messageId)
-        byteBuffer[byteMask & bytePos++] = (byte) (0xFF & (msgId >> 8));
+        outputByteBuffer[outputByteMask & outputBytePos++] = (byte) (0xFF & msgId); //type 2 bytes (this is the messageId)
+        outputByteBuffer[outputByteMask & outputBytePos++] = (byte) (0xFF & (msgId >> 8));
 
-        bytePos = writeInt32(correlationId, bytePos, byteBuffer, byteMask);
+        outputBytePos = writeInt32(correlationId, outputBytePos, outputByteBuffer, outputByteMask);
 
-        bytePos = writeInt32(partitionHash, bytePos, byteBuffer, byteMask);
+        outputBytePos = writeInt32(partitionHash, outputBytePos, outputByteBuffer, outputByteMask);
 
-        byteBuffer[byteMask & bytePos++] = 19;  //13  2 bytes for data offset
-        byteBuffer[byteMask & bytePos++] = 0;
-        return bytePos;
+        outputByteBuffer[outputByteMask & outputBytePos++] = 19;  //13  2 bytes for data offset
+        outputByteBuffer[outputByteMask & outputBytePos++] = 0;
+        return outputBytePos;
     }
 
     private void finishWriteToOutputPipe(Pipe<RawDataSchema> targetOutput, int startBytePos, int len) {
         //done populate of byte buffer, now set length
         Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, len);
+        Pipe.confirmLowLevelWrite(targetOutput, Pipe.sizeOf(targetOutput, RawDataSchema.MSG_CHUNKEDSTREAM_1));
         Pipe.publishWrites(targetOutput);
-        PipeReader.releaseReadLock(input);
         return;
     }
 
