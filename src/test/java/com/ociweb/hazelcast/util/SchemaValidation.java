@@ -1,5 +1,6 @@
 package com.ociweb.hazelcast.util;
 
+import com.ociweb.hazelcast.stage.DebugTypeAssertSchema;
 import com.ociweb.hazelcast.stage.HazelcastRequestsSchema;
 import com.ociweb.pronghorn.pipe.util.build.FROMValidation;
 import org.junit.Test;
@@ -15,7 +16,7 @@ public class SchemaValidation {
 
     @Test
     public void hzRequestFROMTest() {
-        assertTrue(FROMValidation.testForMatchingFROMs("/HazelcastSetRequests.xml", "FROM", HazelcastRequestsSchema.FROM));
+        assertTrue(FROMValidation.testForMatchingFROMs("/HazelcastSetRequests.xml", HazelcastRequestsSchema.instance));
     };
 
     @Test

@@ -93,7 +93,7 @@ public class RequestEncodeStage extends PronghornStage {
             // If there isn't, return.
             int hashCode = Pipe.peekInt(input, 2);
 
-            Pipe<RawDataSchema> targetOutput;
+            Pipe<RawDataSchema> destOutput;
             if (hashCode < 0) {
                 // Deal with a command that does not have a particular partition, but rather is applicable to all the
                 // machines in a cluster.  Check all the output queues to ensure there is room.
@@ -112,17 +112,20 @@ public class RequestEncodeStage extends PronghornStage {
                     // no room was found
                     return;
                 }
-                targetOutput = outputs[outputsRoundCursor];
+                destOutput = outputs[outputsRoundCursor];
             } else {
-                targetOutput = outputs[hashCode % modValue];
+                destOutput = outputs[hashCode % modValue];
                 // Output Ring limits must have varLength > 18 to send header and make some progress >= 19
                 // If the target pipe cannot take this message, then exit.
                 // The invoking facility will be responsible for sending the message back to try later.
                 // Note Well: One output message may only be a fragment of the full message to be sent.
-                if (!Pipe.hasRoomForWrite(targetOutput)) {
+                if (!Pipe.hasRoomForWrite(destOutput)) {
                     return;
                 }
             }
+
+            // Add the message index to the output pipe as required by all messages.
+            final int rawDataMessageSize = Pipe.addMsgIdx(destOutput, RawDataSchema.MSG_CHUNKEDSTREAM_1);
 
             final int msgIdx = Pipe.takeMsgIdx(input);
 
@@ -135,75 +138,77 @@ public class RequestEncodeStage extends PronghornStage {
             long inputMsgId = inputFrom.fieldIdScript[msgIdx];
 
             //gather all the destination variables
-            int outputBytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
+            int outputBytePos = Pipe.bytesWorkingHeadPosition(destOutput);
             final int startOutputBytePos = outputBytePos;
-            byte[] outputByteBuffer = Pipe.byteBuffer(targetOutput);
-            int outputByteMask = Pipe.blobMask(targetOutput);
+            byte[] outputByteBuffer = Pipe.byteBuffer(destOutput);
+            int outputByteMask = Pipe.blobMask(destOutput);
 
             switch ((int) inputMsgId) {
                 // Size
                 case 0x0601:
-                    outputBytePos = encodeSize(inputMsgId, msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    System.out.println("encoder: encodeSize invocation bytePosBefore:" + outputBytePos);
+                    outputBytePos = encodeSize(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    System.out.println("encoder: encodeSize invocation bytePosAfter:" + outputBytePos);
                     break;
 
                 // Contains
                 case 0x0602:
-                    outputBytePos = encodeContains(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeContains(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // ContainsAll
                 case 0x0603:
-                    outputBytePos = encodeContainsAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeContainsAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Add
                 case 0x0604:
-                    encodeAdd(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeAdd(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Remove
                 case 0x0605:
-                    encodeRemove(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeRemove(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // AddAll
                 case 0x0606:
-                    encodeAddAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeAddAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // CompareAndRemoveAll
                 case 0x0607:
-                    encodeCompareAndRemoveAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeCompareAndRemoveAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // CompareAndRetainAll
                 case 0x0608:
-                    encodeCompareAndRetainAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeCompareAndRetainAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Clear
                 case 0x0609:
-                    encodeClear(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeClear(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // GetAll
                 case 0x060a:
-                    encodeGetAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeGetAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // AddListener
                 case 0x060b:
-                    encodeAddListener(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeAddListener(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // RemoveListener
                 case 0x060c:
-                    encodeRemoveListener(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeRemoveListener(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // IsEmpty
                 case 0x060d:
-                    encodeIsEmpty(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeIsEmpty(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 default:
@@ -211,20 +216,27 @@ public class RequestEncodeStage extends PronghornStage {
                     return;
             }
 
-            finishWriteToOutputPipe(targetOutput, startOutputBytePos, outputBytePos - startOutputBytePos);
+            int writeLen = outputBytePos - startOutputBytePos;
+            Pipe.addBytePosAndLenSpecial(destOutput, startOutputBytePos, writeLen);
+            Pipe.confirmLowLevelWrite(destOutput, rawDataMessageSize);
+            Pipe.publishWrites(destOutput);
+            System.out.println("encoder: Wrote: " + writeLen + " bytes on encoder side.");
             Pipe.confirmLowLevelRead(input, Pipe.sizeOf(input, msgIdx));
             Pipe.releaseReads(input);
             return;
         }
     }
 
-    private int encodeSize(long msgId, int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+    private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
         int correlationId = Pipe.takeValue(input);
+        System.out.printf("encoder: correlationID is %d(%x)\n", correlationId, correlationId);
         int partitionHash = Pipe.takeValue(input);
-        outputBytePos = beginWriteToOutputPipe(msgId, msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
+        System.out.printf("encoder: partitionHash is %d(%x)\n", partitionHash, partitionHash);
+        outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
 
         int sourceMetaData = Pipe.takeRingByteMetaData(input);
         int sourceFieldLength = Pipe.takeRingByteLen(input);
+        System.out.println("encoder: encodeSize source field length is " + sourceFieldLength);
         int sourceByteMask = Pipe.blobMask(input);
         byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
         int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
@@ -294,11 +306,11 @@ public class RequestEncodeStage extends PronghornStage {
     }
 
 
-    private int beginWriteToOutputPipe(long msgId, int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask,
-                                       int correlationId, int partitionHash) {
+    private int beginWriteToOutputPipe(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos,
+            byte[] outputByteBuffer, int outputByteMask, int correlationId, int partitionHash) {
         int size = inputFrom.fragScriptSize[msgIdx];
         int bytesCount = Pipe.peekInt(input, size - 2);
-        System.err.println("Total variable bytes to write:" + bytesCount + " not counting lengths");
+        System.out.println("Total variable bytes to write:" + bytesCount + " not counting lengths");
 
         int maxBytesCount = bytesCount + (size * 2);                // rough estimate on the  high end
         if (maxBytesCount > (targetOutput.maxAvgVarLen - 4)) {      // use 4 because we never split a primitive field.
@@ -311,6 +323,7 @@ public class RequestEncodeStage extends PronghornStage {
         outputByteBuffer[outputByteMask & outputBytePos++] = 1;  //version 1 byte const
         outputByteBuffer[outputByteMask & outputBytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
 
+        long msgId = inputFrom.fieldIdScript[msgIdx];
         outputByteBuffer[outputByteMask & outputBytePos++] = (byte) (0xFF & msgId); //type 2 bytes (this is the messageId)
         outputByteBuffer[outputByteMask & outputBytePos++] = (byte) (0xFF & (msgId >> 8));
 
@@ -318,18 +331,11 @@ public class RequestEncodeStage extends PronghornStage {
 
         outputBytePos = writeInt32(partitionHash, outputBytePos, outputByteBuffer, outputByteMask);
 
-        outputByteBuffer[outputByteMask & outputBytePos++] = 19;  //13  2 bytes for data offset
+        outputByteBuffer[outputByteMask & outputBytePos++] = 18;  // 0x12  2 bytes for data offset
         outputByteBuffer[outputByteMask & outputBytePos++] = 0;
         return outputBytePos;
     }
 
-    private void finishWriteToOutputPipe(Pipe<RawDataSchema> targetOutput, int startBytePos, int len) {
-        //done populate of byte buffer, now set length
-        Pipe.addBytePosAndLenSpecial(targetOutput, startBytePos, len);
-        Pipe.confirmLowLevelWrite(targetOutput, Pipe.sizeOf(targetOutput, RawDataSchema.MSG_CHUNKEDSTREAM_1));
-        Pipe.publishWrites(targetOutput);
-        return;
-    }
 
     private int writeUTFToByteBuffer(int bytePos, byte[] byteBuffer, int byteMask) {
         int len = tempAppendable.length();

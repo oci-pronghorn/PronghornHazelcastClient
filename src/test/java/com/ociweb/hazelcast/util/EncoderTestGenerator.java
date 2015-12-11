@@ -1,6 +1,5 @@
 package com.ociweb.hazelcast.util;
 
-import com.ociweb.pronghorn.pipe.MessageSchema;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.stream.StreamingVisitorWriter;
 import com.ociweb.pronghorn.pipe.stream.StreamingWriteVisitor;
