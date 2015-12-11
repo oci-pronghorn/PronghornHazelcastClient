@@ -19,8 +19,8 @@ import static org.junit.Assert.*;
 public class ValidateTemplates {
 
     // TODO: reset the templateFile when Set is working.
-    // private static final String templateFile = "/template/HazelcastRequests.xml";
-    private static final String templateFile = "/template/HazelcastSetRequests.xml";
+    // private static final String templateFile = "/HazelcastRequests.xml";
+    private static final String templateFile = "/HazelcastSetRequests.xml";
 
 
     @Test

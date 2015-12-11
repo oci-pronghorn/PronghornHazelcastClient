@@ -74,6 +74,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("visitor: TemplateClose id:" + id);
         // Publish the output pipe contents
         int writeLen = bytePos-startBytePos;
+        Pipe.addAndGetBytesWorkingHeadPosition(output, writeLen);
         Pipe.addBytePosAndLenSpecial(output, startBytePos, writeLen);
         Pipe.confirmLowLevelWrite(output, rawDataMessageSize);
         Pipe.publishWrites(output);
@@ -157,30 +158,21 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.out.println("visitor: visitUTF8 id:" + id);
         System.out.println("visitor: visitUTF8 value:" + value);
 
-        int len = value.toString().length();
-        byte[] encodedBuffer = new byte[len * 3];
-        int newLength = encode(value.toString().getBytes(), encodedBuffer, len);
-
-        System.out.println("visitor: visitUTF8 writing a value length of:" + newLength);
-        System.out.println("visitUTF8 len bytePosBefore:" + bytePos);
-        bytePos = writeInt32(newLength, bytePos, outBuffer, byteMask);
-        System.out.println("visitUTF8 len bytePosAfter:" + bytePos);
-        System.out.println("visitUTF8 data bytePosBefore:" + bytePos);
-        int i = 0;
-        while (i < newLength) {
-//            bytePos = Pipe.encodeSingleChar((int) source[c++], outBuffer, byteMask, bytePos);
-            outBuffer[bytePos++] = encodedBuffer[i++];
-        }
-        System.out.println("visitUTF8 data bytePosAfter:" + bytePos);
+        CharSequence cs = (CharSequence)value;
+        bytePos = encodeAsUTF8(cs, cs.length(), byteMask, outBuffer, bytePos);
 	}
 
-    private int encode(byte[] sourceChars, byte[] destBuffer, int len) {
-        int bytePos = 0;
-        for (int i = 0; i < len; i++) {
-            bytePos = Pipe.encodeSingleChar(sourceChars[i], destBuffer, byteMask, bytePos);
+    private int encodeAsUTF8(CharSequence s, int len, int mask, byte[] localBuf, int pos) {
+        int c = 0;
+        int origPos = pos;
+        pos+=4;
+        while (c < len) {
+            pos = Pipe.encodeSingleChar((int) s.charAt(c++), localBuf, mask, pos);
         }
-        return bytePos;
+        writeInt32((pos-origPos)-4, pos, outBuffer, byteMask);
+        return pos;
     }
+    
 
     @Override
 	public Appendable targetASCII(String name, long id) {
@@ -212,6 +204,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitBytes(String name, long id, ByteBuffer value) {
+	    value.flip();
         System.out.println("visitBytes name:" + name);
         System.out.println("visitBytes id:" + id);
         System.out.println("visitBytes value:" + value);

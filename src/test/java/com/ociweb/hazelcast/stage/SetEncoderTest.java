@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class SetEncoderTest {
 
-    @Ignore
     @Test
     public void setApiTest() {
 
@@ -63,7 +62,7 @@ public class SetEncoderTest {
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-        scheduler.awaitTermination(30, TimeUnit.SECONDS);
+        scheduler.awaitTermination(3000, TimeUnit.SECONDS);
         System.out.println("finished running test");
     }
 }

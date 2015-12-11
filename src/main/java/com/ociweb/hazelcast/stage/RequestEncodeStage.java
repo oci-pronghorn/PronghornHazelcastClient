@@ -217,6 +217,7 @@ public class RequestEncodeStage extends PronghornStage {
             }
 
             int writeLen = outputBytePos - startOutputBytePos;
+            Pipe.addAndGetBytesWorkingHeadPosition(destOutput, writeLen);
             Pipe.addBytePosAndLenSpecial(destOutput, startOutputBytePos, writeLen);
             Pipe.confirmLowLevelWrite(destOutput, rawDataMessageSize);
             Pipe.publishWrites(destOutput);
