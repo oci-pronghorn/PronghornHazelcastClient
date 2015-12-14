@@ -48,8 +48,8 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 	@Override
 	public void visitTemplateOpen(String name, long id) {
         // Beginning of message
-        System.out.println("visitor: TemplateOpen name:" + name);
-        System.out.println("visitor: TemplateOpen id:" + id);
+//        System.out.println("visitor: TemplateOpen name:" + name);
+//        System.out.println("visitor: TemplateOpen id:" + id);
         if (Pipe.hasRoomForWrite(output, maxFragmentSize)) {
             bytePos = Pipe.bytesWorkingHeadPosition(output);
             startBytePos = bytePos;
@@ -70,51 +70,51 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitTemplateClose(String name, long id) {
-        System.out.println("visitor: TemplateClose name:" + name);
-        System.out.println("visitor: TemplateClose id:" + id);
+//        System.out.println("visitor: TemplateClose name:" + name);
+//        System.out.println("visitor: TemplateClose id:" + id);
         // Publish the output pipe contents
         int writeLen = bytePos-startBytePos;
         Pipe.addAndGetBytesWorkingHeadPosition(output, writeLen);
         Pipe.addBytePosAndLenSpecial(output, startBytePos, writeLen);
         Pipe.confirmLowLevelWrite(output, rawDataMessageSize);
         Pipe.publishWrites(output);
-        System.out.println("visitor: Wrote: " + writeLen + " bytes on TestVisitor side.");
+//        System.out.println("visitor: Wrote: " + writeLen + " bytes on TestVisitor side.");
 	}
 
 	@Override
 	public void visitFragmentOpen(String name, long id, int cursor) {
-        System.out.println("visitor: FragmentOpen:" + name);
+//        System.out.println("visitor: FragmentOpen:" + name);
 	}
 
 	@Override
 	public void visitFragmentClose(String name, long id) {
-        System.out.println("visitor: FragmentClose::" + name);
+        //System.out.println("visitor: FragmentClose::" + name);
 	}
 
 	@Override
 	public void visitSequenceOpen(String name, long id, int length) {
-        System.out.println("visitor: SequenceOpen:" + name);
+//        System.out.println("visitor: SequenceOpen:" + name);
 	}
 
 	@Override
 	public void visitSequenceClose(String name, long id) {
-        System.out.println("visitor: SequenceClose:" + name);
+        // System.out.println("visitor: SequenceClose:" + name);
 	}
 
 	@Override
 	public void visitSignedInteger(String name, long id, int value) {
-        System.out.println("visitor: SignedInteger:" + name);
+//        System.out.println("visitor: SignedInteger:" + name);
         bytePos = writeInt32(value, bytePos, outBuffer, byteMask);
 	}
 
 	@Override
 	public void visitUnsignedInteger(String name, long id, long value) {
-        System.out.println("visitor: UnSignedInteger name:" + name);
-        System.out.println("visitor: UnSignedInteger id:" + id);
-        System.out.println("visitor: UnSignedInteger value:" + value);
-        System.out.println("visitor: UnSignedInteger bytePosBefore:" + bytePos);
+//        System.out.println("visitor: UnSignedInteger name:" + name);
+//        System.out.println("visitor: UnSignedInteger id:" + id);
+//        System.out.println("visitor: UnSignedInteger value:" + value);
+//        System.out.println("visitor: UnSignedInteger bytePosBefore:" + bytePos);
         bytePos = writeInt32((int)value, bytePos, outBuffer, byteMask);
-        System.out.println("visitor: UnSignedInteger bytePosAfter:" + bytePos);
+//        System.out.println("visitor: UnSignedInteger bytePosAfter:" + bytePos);
         if (name.equals("PartitionHash")) {
             outBuffer[byteMask & bytePos++] = 18;  // 0x12 - 2 bytes for data offset
             outBuffer[byteMask & bytePos++] = 0;
@@ -123,40 +123,40 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitSignedLong(String name, long id, long value) {
-        System.out.println("visitor: SignedLong name :" + name);
-        System.out.println("visitor: SignedLong id:" + id);
-        System.out.println("visitor: SignedLong value:" + value);
+//        System.out.println("visitor: SignedLong name :" + name);
+//        System.out.println("visitor: SignedLong id:" + id);
+//        System.out.println("visitor: SignedLong value:" + value);
         bytePos = writeInt64(value, bytePos, outBuffer, byteMask);
     }
 
 	@Override
 	public void visitUnsignedLong(String name, long id, long value) {
-        System.out.println("visitor: UnSignedLong name :" + name);
-        System.out.println("visitor: UnSignedLong id:" + id);
-        System.out.println("visitor: UnSignedLong value:" + value);
+//        System.out.println("visitor: UnSignedLong name :" + name);
+//        System.out.println("visitor: UnSignedLong id:" + id);
+//        System.out.println("visitor: UnSignedLong value:" + value);
 	}
 
 	@Override
 	public void visitDecimal(String name, long id, int exp, long mant) {
-        System.out.println("visitor: Decimal name :" + name);
-        System.out.println("visitor: Decimal id:" + id);
-        System.out.println("visitor: Decimal exp:" + exp);
-        System.out.println("visitor: Decimal mant:" + mant);
+//        System.out.println("visitor: Decimal name :" + name);
+//        System.out.println("visitor: Decimal id:" + id);
+//        System.out.println("visitor: Decimal exp:" + exp);
+//        System.out.println("visitor: Decimal mant:" + mant);
 	}
 
     @Override
     public Appendable targetUTF8(String name, long id) {
-        System.out.println("visitor: targetUTF8 name:" + name);
-        System.out.println("visitor: targetUTF8 id:" + id);
+//        System.out.println("visitor: targetUTF8 name:" + name);
+//        System.out.println("visitor: targetUTF8 id:" + id);
         tempStringBuilder.setLength(0);
         return tempStringBuilder;
     }
 
     @Override
 	public void visitUTF8(String name, long id, Appendable value) {
-        System.out.println("visitor: visitUTF8 name:" + name);
-        System.out.println("visitor: visitUTF8 id:" + id);
-        System.out.println("visitor: visitUTF8 value:" + value);
+//        System.out.println("visitor: visitUTF8 name:" + name);
+//        System.out.println("visitor: visitUTF8 id:" + id);
+//        System.out.println("visitor: visitUTF8 value:" + value);
 
         CharSequence cs = (CharSequence)value;
         bytePos = encodeAsUTF8(cs, cs.length(), byteMask, outBuffer, bytePos);
@@ -169,31 +169,31 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         while (c < len) {
             pos = Pipe.encodeSingleChar((int) s.charAt(c++), localBuf, mask, pos);
         }
-        writeInt32((pos-origPos)-4, pos, outBuffer, byteMask);
+        writeInt32((pos-origPos)-4, origPos, outBuffer, byteMask);
         return pos;
     }
-    
+
 
     @Override
 	public Appendable targetASCII(String name, long id) {
-        System.out.println("TargetASCII name:" + name);
-        System.out.println("TargetASCII id:" + id);
+//        System.out.println("TargetASCII name:" + name);
+//        System.out.println("TargetASCII id:" + id);
         throw new UnsupportedOperationException("ASCII requested -- All text for Hazelcast MUST be UTF8 encoded.");
 	}
 
     @Override
     public void visitASCII(String name, long id, Appendable value) {
-        System.out.println("visitAscii name:" + name);
-        System.out.println("visitAscii id:" + id);
-        System.out.println("visitAscii value:" + value);
+//        System.out.println("visitAscii name:" + name);
+//        System.out.println("visitAscii id:" + id);
+//        System.out.println("visitAscii value:" + value);
         throw new UnsupportedOperationException("ASCII requested -- All text for Hazelcast MUST be UTF8 encoded.");
     }
 
 	@Override
 	public ByteBuffer targetBytes(String name, long id, int length) {
-        System.out.println("targetBytes name:" + name);
-        System.out.println("targetBytes id:" + id);
-        System.out.println("targetBytes length:" + length);
+//        System.out.println("targetBytes name:" + name);
+//        System.out.println("targetBytes id:" + id);
+//        System.out.println("targetBytes length:" + length);
         tempByteBuffer.clear();
         if (tempByteBuffer.capacity() < length) {
             tempByteBuffer = ByteBuffer.allocate(length * 2);
@@ -205,9 +205,9 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 	@Override
 	public void visitBytes(String name, long id, ByteBuffer value) {
 	    value.flip();
-        System.out.println("visitBytes name:" + name);
-        System.out.println("visitBytes id:" + id);
-        System.out.println("visitBytes value:" + value);
+//        System.out.println("visitBytes name:" + name);
+//        System.out.println("visitBytes id:" + id);
+//        System.out.println("visitBytes value:" + value);
 
         System.arraycopy(value.array(), 0, outBuffer, bytePos, value.position());
         bytePos += value.position();
@@ -215,12 +215,12 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void startup() {
-        System.out.println("In the startup");
+//        System.out.println("In the startup");
 	}
 
 	@Override
 	public void shutdown() {
-        System.out.println("In the shutdown");
+//        System.out.println("In the shutdown");
     }
 
     private int writeInt32(int value, int bytePos, byte[] byteBuffer, int byteMask) {

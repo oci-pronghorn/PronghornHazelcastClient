@@ -146,9 +146,9 @@ public class RequestEncodeStage extends PronghornStage {
             switch ((int) inputMsgId) {
                 // Size
                 case 0x0601:
-                    System.out.println("encoder: encodeSize invocation bytePosBefore:" + outputBytePos);
+//                    System.out.println("encoder: encodeSize invocation bytePosBefore:" + outputBytePos);
                     outputBytePos = encodeSize(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
-                    System.out.println("encoder: encodeSize invocation bytePosAfter:" + outputBytePos);
+//                    System.out.println("encoder: encodeSize invocation bytePosAfter:" + outputBytePos);
                     break;
 
                 // Contains
@@ -221,7 +221,7 @@ public class RequestEncodeStage extends PronghornStage {
             Pipe.addBytePosAndLenSpecial(destOutput, startOutputBytePos, writeLen);
             Pipe.confirmLowLevelWrite(destOutput, rawDataMessageSize);
             Pipe.publishWrites(destOutput);
-            System.out.println("encoder: Wrote: " + writeLen + " bytes on encoder side.");
+//            System.out.println("encoder: Wrote: " + writeLen + " bytes on encoder side.");
             Pipe.confirmLowLevelRead(input, Pipe.sizeOf(input, msgIdx));
             Pipe.releaseReads(input);
             return;
@@ -230,14 +230,14 @@ public class RequestEncodeStage extends PronghornStage {
 
     private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
         int correlationId = Pipe.takeValue(input);
-        System.out.printf("encoder: correlationID is %d(%x)\n", correlationId, correlationId);
+//        System.out.printf("encoder: correlationID is %d(%x)\n", correlationId, correlationId);
         int partitionHash = Pipe.takeValue(input);
-        System.out.printf("encoder: partitionHash is %d(%x)\n", partitionHash, partitionHash);
+//        System.out.printf("encoder: partitionHash is %d(%x)\n", partitionHash, partitionHash);
         outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
 
         int sourceMetaData = Pipe.takeRingByteMetaData(input);
         int sourceFieldLength = Pipe.takeRingByteLen(input);
-        System.out.println("encoder: encodeSize source field length is " + sourceFieldLength);
+//        System.out.println("encoder: encodeSize source field length is " + sourceFieldLength);
         int sourceByteMask = Pipe.blobMask(input);
         byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
         int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
@@ -311,7 +311,7 @@ public class RequestEncodeStage extends PronghornStage {
             byte[] outputByteBuffer, int outputByteMask, int correlationId, int partitionHash) {
         int size = inputFrom.fragScriptSize[msgIdx];
         int bytesCount = Pipe.peekInt(input, size - 2);
-        System.out.println("Total variable bytes to write:" + bytesCount + " not counting lengths");
+//        System.out.println("Total variable bytes to write:" + bytesCount + " not counting lengths");
 
         int maxBytesCount = bytesCount + (size * 2);                // rough estimate on the  high end
         if (maxBytesCount > (targetOutput.maxAvgVarLen - 4)) {      // use 4 because we never split a primitive field.

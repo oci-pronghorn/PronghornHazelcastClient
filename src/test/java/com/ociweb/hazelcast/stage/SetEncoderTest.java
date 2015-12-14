@@ -32,13 +32,15 @@ public class SetEncoderTest {
         Pipe<HazelcastRequestsSchema> generatorPipe = new Pipe<>(hzReqConfig);
 
         long seed = 43L;
-        int iterations = 1;
-        new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
+        int iterations = 2;
+//        new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
 
         // Create Splitter w/Pipes.
         Pipe<HazelcastRequestsSchema> pipeToExpecteds = new Pipe<>(hzReqConfig.grow2x());
         Pipe<HazelcastRequestsSchema> pipeToEncoder = new Pipe<>(hzReqConfig.grow2x());
-        new SplitterStage<>(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
+//        new SplitterStage<>(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
+        new EncoderTestGenerator(gm, seed, iterations, pipeToEncoder);
+        new EncoderTestGenerator(gm, seed, iterations, pipeToExpecteds);
 
         // Create Encoder w/Pipes.
         PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 512);
@@ -62,7 +64,7 @@ public class SetEncoderTest {
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-        scheduler.awaitTermination(3000, TimeUnit.SECONDS);
-        System.out.println("finished running test");
+        scheduler.awaitTermination(300, TimeUnit.SECONDS);
+        System.out.println("Finished running test: " + System.currentTimeMillis());
     }
 }
