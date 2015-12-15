@@ -14,7 +14,6 @@
         <string name="Name" id="0x06ff01" charset="unicode"/>
     </template>
 
-    <!-- cas
     <template name="Contains" id="0x0602" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
         <uInt32 name="CorrelationID" id="0x1ffff0"/>
         <uInt32 name="PartitionHash" id="0x1fffef"/>
@@ -22,12 +21,14 @@
         <byteVector name="Value" id="0x06ff02"/>
     </template>
 
+    <!-- cas
     <template name="ContainsAll" id="0x0603" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
         <uInt32 name="CorrelationID" id="0x1ffff0"/>
         <uInt32 name="PartitionHash" id="0x1fffef"/>
         <string name="Name" id="0x06ff01" charset="unicode"/>
         <byteVector name="ValueSet" id="0x06ff03"/>
     </template>
+    -->
 
         <template name="Add" id="0x0604" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
@@ -36,6 +37,7 @@
             <byteVector name="Value" id="0x06ff02"/>
         </template>
 
+    <!--
         <template name="Remove" id="0x0605" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>

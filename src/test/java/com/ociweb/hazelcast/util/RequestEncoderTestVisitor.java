@@ -48,7 +48,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 	@Override
 	public void visitTemplateOpen(String name, long id) {
         // Beginning of message
-//        System.out.println("visitor: TemplateOpen name:" + name);
+        System.out.println("visitor: TemplateOpen name:" + name);
 //        System.out.println("visitor: TemplateOpen id:" + id);
         if (Pipe.hasRoomForWrite(output, maxFragmentSize)) {
             bytePos = Pipe.bytesWorkingHeadPosition(output);
@@ -162,17 +162,6 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         bytePos = encodeAsUTF8(cs, cs.length(), byteMask, outBuffer, bytePos);
 	}
 
-    private int encodeAsUTF8(CharSequence s, int len, int mask, byte[] localBuf, int pos) {
-        int c = 0;
-        int origPos = pos;
-        pos+=4;
-        while (c < len) {
-            pos = Pipe.encodeSingleChar((int) s.charAt(c++), localBuf, mask, pos);
-        }
-        writeInt32((pos-origPos)-4, origPos, outBuffer, byteMask);
-        return pos;
-    }
-
 
     @Override
 	public Appendable targetASCII(String name, long id) {
@@ -191,26 +180,16 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public ByteBuffer targetBytes(String name, long id, int length) {
-//        System.out.println("targetBytes name:" + name);
-//        System.out.println("targetBytes id:" + id);
-//        System.out.println("targetBytes length:" + length);
-        tempByteBuffer.clear();
-        if (tempByteBuffer.capacity() < length) {
-            tempByteBuffer = ByteBuffer.allocate(length * 2);
-        }
+//        System.out.println("visitor: targetBytes name:" + name);
+//        System.out.println("visitor: targetBytes id:" + id);
+//        System.out.println("visitor: targetBytes length:" + length);
         bytePos = writeInt32(length, bytePos, outBuffer, byteMask);
-        return tempByteBuffer;
+        return Pipe.wrappedBlobForWriting(bytePos, output);
 	}
 
 	@Override
 	public void visitBytes(String name, long id, ByteBuffer value) {
-	    value.flip();
-//        System.out.println("visitBytes name:" + name);
-//        System.out.println("visitBytes id:" + id);
-//        System.out.println("visitBytes value:" + value);
-
-        System.arraycopy(value.array(), 0, outBuffer, bytePos, value.position());
-        bytePos += value.position();
+        bytePos = value.position();
 	}
 
 	@Override
@@ -244,4 +223,17 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>56));
         return bytePos;
     }
+
+
+    private int encodeAsUTF8(CharSequence s, int len, int mask, byte[] localBuf, int pos) {
+        int c = 0;
+        int origPos = pos;
+        pos+=4;
+        while (c < len) {
+            pos = Pipe.encodeSingleChar((int) s.charAt(c++), localBuf, mask, pos);
+        }
+        writeInt32((pos-origPos)-4, origPos, outBuffer, byteMask);
+        return pos;
+    }
+
 }

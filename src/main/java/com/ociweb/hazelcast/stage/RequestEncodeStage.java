@@ -146,9 +146,7 @@ public class RequestEncodeStage extends PronghornStage {
             switch ((int) inputMsgId) {
                 // Size
                 case 0x0601:
-//                    System.out.println("encoder: encodeSize invocation bytePosBefore:" + outputBytePos);
                     outputBytePos = encodeSize(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
-//                    System.out.println("encoder: encodeSize invocation bytePosAfter:" + outputBytePos);
                     break;
 
                 // Contains
@@ -221,7 +219,6 @@ public class RequestEncodeStage extends PronghornStage {
             Pipe.addBytePosAndLenSpecial(destOutput, startOutputBytePos, writeLen);
             Pipe.confirmLowLevelWrite(destOutput, rawDataMessageSize);
             Pipe.publishWrites(destOutput);
-//            System.out.println("encoder: Wrote: " + writeLen + " bytes on encoder side.");
             Pipe.confirmLowLevelRead(input, Pipe.sizeOf(input, msgIdx));
             Pipe.releaseReads(input);
             return;
@@ -230,14 +227,11 @@ public class RequestEncodeStage extends PronghornStage {
 
     private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
         int correlationId = Pipe.takeValue(input);
-//        System.out.printf("encoder: correlationID is %d(%x)\n", correlationId, correlationId);
         int partitionHash = Pipe.takeValue(input);
-//        System.out.printf("encoder: partitionHash is %d(%x)\n", partitionHash, partitionHash);
         outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
 
         int sourceMetaData = Pipe.takeRingByteMetaData(input);
         int sourceFieldLength = Pipe.takeRingByteLen(input);
-//        System.out.println("encoder: encodeSize source field length is " + sourceFieldLength);
         int sourceByteMask = Pipe.blobMask(input);
         byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
         int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
@@ -247,18 +241,25 @@ public class RequestEncodeStage extends PronghornStage {
         return outputBytePos + sourceFieldLength;
     }
 
-    private int encodeContains(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
-        /*
-        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136);
-        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135);
-        bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
-        tempAppendable.setLength(0);
-        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_NAME_458497, tempAppendable);
-        bytePos = writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
-        int len = PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_VALUE_458498, byteBuffer, bytePos, byteMask);
-        return bytePos + len;
-        */
-        return 0;
+    private int encodeContains(int msgIdx, Pipe targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        int correlationId = Pipe.takeValue(input);
+        int partitionHash = Pipe.takeValue(input);
+        outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
+
+        // Pick up the two blob fields
+        for (int i = 0; i < 2; i++) {
+            int sourceMetaData = Pipe.takeRingByteMetaData(input);
+            int sourceFieldLength = Pipe.takeRingByteLen(input);
+            int sourceByteMask = Pipe.blobMask(input);
+            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
+
+            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+            outputBytePos += sourceFieldLength;
+        }
+
+        return outputBytePos;
     }
 
     private int encodeContainsAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
@@ -270,9 +271,9 @@ public class RequestEncodeStage extends PronghornStage {
         PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_NAME_458497, tempAppendable);
         bytePos = writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
         int len = PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_VALUESET_458499, byteBuffer, bytePos, byteMask);
-
-        return bytePos + len;
         */
+
+//        return bytePos + len;
         return 0;
     }
 

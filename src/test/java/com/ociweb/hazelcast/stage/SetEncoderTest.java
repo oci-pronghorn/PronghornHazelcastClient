@@ -32,24 +32,24 @@ public class SetEncoderTest {
         Pipe<HazelcastRequestsSchema> generatorPipe = new Pipe<>(hzReqConfig);
 
         long seed = 43L;
-        int iterations = 2;
-//        new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
+        int iterations = 20;
+        new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
 
         // Create Splitter w/Pipes.
         Pipe<HazelcastRequestsSchema> pipeToExpecteds = new Pipe<>(hzReqConfig.grow2x());
         Pipe<HazelcastRequestsSchema> pipeToEncoder = new Pipe<>(hzReqConfig.grow2x());
-//        new SplitterStage<>(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
-        new EncoderTestGenerator(gm, seed, iterations, pipeToEncoder);
-        new EncoderTestGenerator(gm, seed, iterations, pipeToExpecteds);
+        new SplitterStage<>(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
+
+//        new ConsoleJSONDumpStage<>(gm, pipeToExpecteds);
+//        new ConsoleJSONDumpStage<>(gm, pipeToEncoder, System.err);
 
         // Create Encoder w/Pipes.
         PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 512);
         Pipe<RawDataSchema>[] encoderToValidator = new Pipe[1];
         encoderToValidator[0] = new Pipe<>(rawBytes);
-        // RequestEncodeStage is the class under test.
-        new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator());
+        new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator()); // This is the class under test.
 
-        // Create the class to build the expected test values
+        // Create the class that builds the expected test values
         Pipe<RawDataSchema> expectedMessagesToValidatorPipe = new Pipe<>(rawBytes);
         new ExpectedEncoderMessageBuilder(gm, pipeToExpecteds, expectedMessagesToValidatorPipe);
 
@@ -60,11 +60,9 @@ public class SetEncoderTest {
 
         MonitorConsoleStage.attach(gm);
 
-        System.out.println("running test");
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-        scheduler.awaitTermination(300, TimeUnit.SECONDS);
-        System.out.println("Finished running test: " + System.currentTimeMillis());
+        scheduler.awaitTermination(30, TimeUnit.SECONDS);
     }
 }

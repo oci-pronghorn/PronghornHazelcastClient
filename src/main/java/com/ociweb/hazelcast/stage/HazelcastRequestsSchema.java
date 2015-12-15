@@ -6,6 +6,7 @@ import com.ociweb.pronghorn.pipe.MessageSchema;
 public class HazelcastRequestsSchema extends MessageSchema {
 
     public final static FieldReferenceOffsetManager FROM = new FieldReferenceOffsetManager(
+    /* -- first one
         new int[]{0xc0400004,0x80000000,0x80000001,0xa8000000,0xc0200004},
         (short)0,
         new String[]{"Size","CorrelationID","PartitionHash","Name",null},
@@ -14,6 +15,17 @@ public class HazelcastRequestsSchema extends MessageSchema {
         "HazelcastSetRequests.xml",
         new long[]{2, 2, 0},
         new int[]{2, 2, 0});
+    */
+    /* -- first two */
+        new int[]{0xc0400004,0x80000000,0x80000001,0xa8000000,0xc0200004,0xc0400005,0x80000000,0x80000001,0xa8000000,0xb8000001,0xc0200005},
+        (short)0,
+        new String[]{"Size","CorrelationID","PartitionHash","Name",null,"Contains","CorrelationID","PartitionHash","Name","Value",null},
+        new long[]{1537, 2097136, 2097135, 458497, 0, 1538, 2097136, 2097135, 458497, 458498, 0},
+        new String[]{"global",null,null,null,null,"global",null,null,null,null,null},
+        "HazelcastSetRequests.xml",
+        new long[]{2, 2, 0},
+        new int[]{2, 2, 0});
+    /**/
     /* -- first three
         new int[]{0xc0400004,0x80000000,0x80000001,0xa8000000,0xc0200004,0xc0400005,0x80000000,0x80000001,0xa8000000,0xb8000001,0xc0200005,0xc0400005,0x80000000,0x80000001,0xa8000000,0xb8000002,0xc0200005},
         (short)0,
@@ -42,4 +54,9 @@ public class HazelcastRequestsSchema extends MessageSchema {
     public static final int MSG_SIZE_1537_FIELD_CORRELATIONID_2097136 = 0x00000001;
     public static final int MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135 = 0x00000002;
     public static final int MSG_SIZE_1537_FIELD_NAME_458497 = 0x01400003;
+    public static final int MSG_CONTAINS_1538 = 0x00000005;
+    public static final int MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136 = 0x00000001;
+    public static final int MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135 = 0x00000002;
+    public static final int MSG_CONTAINS_1538_FIELD_NAME_458497 = 0x01400003;
+    public static final int MSG_CONTAINS_1538_FIELD_VALUE_458498 = 0x01C00005;
 }
