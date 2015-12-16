@@ -29,6 +29,9 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
     byte[] outBuffer;
     int byteMask;
 
+    //temp
+    private int iter = 1;
+
 	StringBuilder tempStringBuilder =  new StringBuilder(128);
 	ByteBuffer tempByteBuffer = ByteBuffer.allocate(1024);
 
@@ -47,6 +50,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitTemplateOpen(String name, long id) {
+        System.out.println("TestVisitor: iteration " + iter++);
         // Beginning of message
         System.out.println("visitor: TemplateOpen name:" + name);
 //        System.out.println("visitor: TemplateOpen id:" + id);

@@ -22,17 +22,19 @@ import java.util.concurrent.TimeUnit;
  */
 public class SetEncoderTest {
 
+    @Ignore
     @Test
     public void setApiTest() {
 
         GraphManager gm = new GraphManager();
 
         // Create Generator Stage (from Pronghorn Pipes).
-        PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 256);
+        PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 512);
+//        PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 256);
         Pipe<HazelcastRequestsSchema> generatorPipe = new Pipe<>(hzReqConfig);
 
         long seed = 43L;
-        int iterations = 20;
+        int iterations = 1;
         new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
 
         // Create Splitter w/Pipes.
@@ -43,8 +45,10 @@ public class SetEncoderTest {
 //        new ConsoleJSONDumpStage<>(gm, pipeToExpecteds);
 //        new ConsoleJSONDumpStage<>(gm, pipeToEncoder, System.err);
 
+
         // Create Encoder w/Pipes.
-        PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 512);
+        PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 1024);
+//        PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 512);
         Pipe<RawDataSchema>[] encoderToValidator = new Pipe[1];
         encoderToValidator[0] = new Pipe<>(rawBytes);
         new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator()); // This is the class under test.
@@ -63,6 +67,6 @@ public class SetEncoderTest {
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-        scheduler.awaitTermination(30, TimeUnit.SECONDS);
+        scheduler.awaitTermination(300, TimeUnit.SECONDS);
     }
 }

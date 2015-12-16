@@ -9,6 +9,9 @@ import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
 public class RequestEncodeStage extends PronghornStage {
 
+    // temp
+    private int iter = 1;
+
     private final Pipe   input;
     private final Pipe[] outputs;
     private Pipe[] indexedOutputs;
@@ -88,12 +91,13 @@ public class RequestEncodeStage extends PronghornStage {
     public void run() {
 
         while (Pipe.hasContentToRead(input)) {
+            System.err.println("encodeStage: iteration " + iter++);
             // The hash code is always the second field.  Use it to figure out which pipe or pipes
             // will be used, then ensure there is enough room in the intended destinations.
             // If there isn't, return.
             int hashCode = Pipe.peekInt(input, 2);
 
-            Pipe<RawDataSchema> destOutput;
+            Pipe<RawDataSchema> targetOutput;
             if (hashCode < 0) {
                 // Deal with a command that does not have a particular partition, but rather is applicable to all the
                 // machines in a cluster.  Check all the output queues to ensure there is room.
@@ -110,22 +114,24 @@ public class RequestEncodeStage extends PronghornStage {
 
                 if (outputsRoundCursor == original) {
                     // no room was found
+                    System.err.println("encodeStage: return 1");
                     return;
                 }
-                destOutput = outputs[outputsRoundCursor];
+                targetOutput = outputs[outputsRoundCursor];
             } else {
-                destOutput = outputs[hashCode % modValue];
+                targetOutput = outputs[hashCode % modValue];
                 // Output Ring limits must have varLength > 18 to send header and make some progress >= 19
                 // If the target pipe cannot take this message, then exit.
                 // The invoking facility will be responsible for sending the message back to try later.
                 // Note Well: One output message may only be a fragment of the full message to be sent.
-                if (!Pipe.hasRoomForWrite(destOutput)) {
+                if (!Pipe.hasRoomForWrite(targetOutput)) {
+                    System.err.println("encodeStage: return 2");
                     return;
                 }
             }
 
             // Add the message index to the output pipe as required by all messages.
-            final int rawDataMessageSize = Pipe.addMsgIdx(destOutput, RawDataSchema.MSG_CHUNKEDSTREAM_1);
+            final int rawDataMessageSize = Pipe.addMsgIdx(targetOutput, RawDataSchema.MSG_CHUNKEDSTREAM_1);
 
             final int msgIdx = Pipe.takeMsgIdx(input);
 
@@ -138,75 +144,93 @@ public class RequestEncodeStage extends PronghornStage {
             long inputMsgId = inputFrom.fieldIdScript[msgIdx];
 
             //gather all the destination variables
-            int outputBytePos = Pipe.bytesWorkingHeadPosition(destOutput);
+            int outputBytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
             final int startOutputBytePos = outputBytePos;
-            byte[] outputByteBuffer = Pipe.byteBuffer(destOutput);
-            int outputByteMask = Pipe.blobMask(destOutput);
+            byte[] outputByteBuffer = Pipe.byteBuffer(targetOutput);
+            int outputByteMask = Pipe.blobMask(targetOutput);
 
+            outputBytePos = encodeCorrelationIdAndPartitionHash(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+
+            System.err.println("msgIdx: " + msgIdx + ", inputMsgId: 0X" + Long.toHexString(inputMsgId));
             switch ((int) inputMsgId) {
+                // CreateProxy
+                case 0x05:
+                    outputBytePos = encodeCreateProxy(outputBytePos, outputByteBuffer, outputByteMask);
+                    break;
+
+                // DestroyProxy
+                case 0x06:
+                    outputBytePos = encodeDestroyProxy(outputBytePos, outputByteBuffer, outputByteMask);
+                    break;
+
+                // GetPartitions
+                case 0x08:
+                    // No-op the only thing going is the Message index and it is already in the pipe.
+                    break;
+
                 // Size
                 case 0x0601:
-                    outputBytePos = encodeSize(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeSize(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Contains
                 case 0x0602:
-                    outputBytePos = encodeContains(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeContains(outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // ContainsAll
                 case 0x0603:
-                    outputBytePos = encodeContainsAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeContainsAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Add
                 case 0x0604:
-                    encodeAdd(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeAdd(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Remove
                 case 0x0605:
-                    encodeRemove(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeRemove(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // AddAll
                 case 0x0606:
-                    encodeAddAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeAddAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // CompareAndRemoveAll
                 case 0x0607:
-                    encodeCompareAndRemoveAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeCompareAndRemoveAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // CompareAndRetainAll
                 case 0x0608:
-                    encodeCompareAndRetainAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeCompareAndRetainAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Clear
                 case 0x0609:
-                    encodeClear(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeClear(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // GetAll
                 case 0x060a:
-                    encodeGetAll(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeGetAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // AddListener
                 case 0x060b:
-                    encodeAddListener(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeAddListener(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // RemoveListener
                 case 0x060c:
-                    encodeRemoveListener(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeRemoveListener(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // IsEmpty
                 case 0x060d:
-                    encodeIsEmpty(msgIdx, destOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    encodeIsEmpty(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 default:
@@ -215,21 +239,48 @@ public class RequestEncodeStage extends PronghornStage {
             }
 
             int writeLen = outputBytePos - startOutputBytePos;
-            Pipe.addAndGetBytesWorkingHeadPosition(destOutput, writeLen);
-            Pipe.addBytePosAndLenSpecial(destOutput, startOutputBytePos, writeLen);
-            Pipe.confirmLowLevelWrite(destOutput, rawDataMessageSize);
-            Pipe.publishWrites(destOutput);
+            Pipe.addAndGetBytesWorkingHeadPosition(targetOutput, writeLen);
+            Pipe.addBytePosAndLenSpecial(targetOutput, startOutputBytePos, writeLen);
+            Pipe.confirmLowLevelWrite(targetOutput, rawDataMessageSize);
+            Pipe.publishWrites(targetOutput);
             Pipe.confirmLowLevelRead(input, Pipe.sizeOf(input, msgIdx));
             Pipe.releaseReads(input);
             return;
         }
     }
 
-    private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        int correlationId = Pipe.takeValue(input);
-        int partitionHash = Pipe.takeValue(input);
-        outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
 
+    private int encodeDestroyProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        for (int i = 0; i < 2; i++) {
+            int sourceMetaData = Pipe.takeRingByteMetaData(input);
+            int sourceFieldLength = Pipe.takeRingByteLen(input);
+            int sourceByteMask = Pipe.blobMask(input);
+            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
+
+            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+            outputBytePos += sourceFieldLength;
+        }
+        return outputBytePos;
+    }
+
+    private int encodeCreateProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        for (int i = 0; i < 2; i++) {
+            int sourceMetaData = Pipe.takeRingByteMetaData(input);
+            int sourceFieldLength = Pipe.takeRingByteLen(input);
+            int sourceByteMask = Pipe.blobMask(input);
+            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
+
+            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+            outputBytePos += sourceFieldLength;
+        }
+        return outputBytePos;
+    }
+
+    private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
         int sourceMetaData = Pipe.takeRingByteMetaData(input);
         int sourceFieldLength = Pipe.takeRingByteLen(input);
         int sourceByteMask = Pipe.blobMask(input);
@@ -241,11 +292,7 @@ public class RequestEncodeStage extends PronghornStage {
         return outputBytePos + sourceFieldLength;
     }
 
-    private int encodeContains(int msgIdx, Pipe targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        int correlationId = Pipe.takeValue(input);
-        int partitionHash = Pipe.takeValue(input);
-        outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
-
+    private int encodeContains(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
         // Pick up the two blob fields
         for (int i = 0; i < 2; i++) {
             int sourceMetaData = Pipe.takeRingByteMetaData(input);
@@ -307,7 +354,6 @@ public class RequestEncodeStage extends PronghornStage {
     private void encodeIsEmpty(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
     }
 
-
     private int beginWriteToOutputPipe(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos,
             byte[] outputByteBuffer, int outputByteMask, int correlationId, int partitionHash) {
         int size = inputFrom.fragScriptSize[msgIdx];
@@ -320,7 +366,7 @@ public class RequestEncodeStage extends PronghornStage {
             int limit = (maxBytesCount / parts);                    // TODO: must finish this split logic later.
         }
 
-        // Hazelcast requires 4 byte length before the packet.  This value is NOT written here on the front of the
+        // Hazelcast requires 5 byte length before the packet.  This value is NOT written here on the front of the
         // packet instead it is in the fixed length section,  On socket transmit it will be sent first.
         outputByteBuffer[outputByteMask & outputBytePos++] = 1;  //version 1 byte const
         outputByteBuffer[outputByteMask & outputBytePos++] = BIT_FLAG_START | BIT_FLAG_END;  //flags   1 byte  begin/end  zeros
@@ -335,6 +381,14 @@ public class RequestEncodeStage extends PronghornStage {
 
         outputByteBuffer[outputByteMask & outputBytePos++] = 18;  // 0x12  2 bytes for data offset
         outputByteBuffer[outputByteMask & outputBytePos++] = 0;
+        return outputBytePos;
+    }
+
+
+    private int encodeCorrelationIdAndPartitionHash(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        int correlationId = Pipe.takeValue(input);
+        int partitionHash = Pipe.takeValue(input);
+        outputBytePos = beginWriteToOutputPipe(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask, correlationId, partitionHash);
         return outputBytePos;
     }
 

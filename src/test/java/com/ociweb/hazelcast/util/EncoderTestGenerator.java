@@ -13,6 +13,7 @@ public class EncoderTestGenerator extends PronghornStage {
 
     private final StreamingVisitorWriter writer;
     private int iterations;
+    private int iter = 1;
 
     public EncoderTestGenerator(GraphManager gm, long seed, int iterations, Pipe output) {
         super(gm, NONE, output);
@@ -31,9 +32,15 @@ public class EncoderTestGenerator extends PronghornStage {
 
     @Override
     public void run() {
+        System.out.println("generator: iteration " + iter++);
         writer.run();
         iterations--;
         if (iterations == 0) {
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             requestShutdown();
         }
     }
