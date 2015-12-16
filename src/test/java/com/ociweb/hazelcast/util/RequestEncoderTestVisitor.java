@@ -203,7 +203,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void shutdown() {
-//        System.out.println("In the shutdown");
+        System.err.println("RequestEncoderTestVisitor shutdown: " + System.currentTimeMillis());
     }
 
     private int writeInt32(int value, int bytePos, byte[] byteBuffer, int byteMask) {

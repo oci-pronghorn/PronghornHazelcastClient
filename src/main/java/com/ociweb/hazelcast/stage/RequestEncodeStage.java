@@ -136,10 +136,7 @@ public class RequestEncodeStage extends PronghornStage {
             final int msgIdx = Pipe.takeMsgIdx(input);
 
             // FUTURE: This can be made faster with code generation for every message type.
-            if (msgIdx > 5) {
-                System.out.println("invalid msgIdx: " + msgIdx);
-                return;
-            }
+//            if (msgIdx > 5) { System.out.println("invalid msgIdx: " + msgIdx); return; }
 
             long inputMsgId = inputFrom.fieldIdScript[msgIdx];
 
@@ -412,4 +409,9 @@ public class RequestEncodeStage extends PronghornStage {
         return bytePos;
     }
 
+
+    @Override
+    public void shutdown() {
+        System.err.println("RequestEncodeStage shutdown: " + System.currentTimeMillis());
+    }
 }

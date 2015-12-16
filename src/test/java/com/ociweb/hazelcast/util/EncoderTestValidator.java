@@ -39,6 +39,7 @@ public class EncoderTestValidator<T extends MessageSchema> extends PronghornStag
 
     @Override
     public void shutdown() {
+        System.err.println("EncoderTestValidator shutdown: " + System.currentTimeMillis());
         reader.shutdown();
     }
 

@@ -37,7 +37,7 @@ public class EncoderTestGenerator extends PronghornStage {
         iterations--;
         if (iterations == 0) {
             try {
-                Thread.sleep(20);
+                Thread.sleep(5000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -47,6 +47,7 @@ public class EncoderTestGenerator extends PronghornStage {
 
     @Override
     public void shutdown() {
+        System.err.println("EncoderTestGenerator shutdown: " + System.currentTimeMillis());
         writer.shutdown();
     }
 

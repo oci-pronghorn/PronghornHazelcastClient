@@ -87,6 +87,7 @@ public class ExpectedEncoderMessageBuilder extends PronghornStage {
 
     @Override
     public void shutdown() {
+        System.err.println("ExpectedEncoderMessageBuilder: " + System.currentTimeMillis());
         reader.shutdown();
     }
 
