@@ -29,22 +29,16 @@ public class SetEncoderTest {
 
         // Create Generator Stage (from Pronghorn Pipes).
         PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 1024);
-//        PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 512);
-//        PipeConfig<HazelcastRequestsSchema> hzReqConfig = new PipeConfig<>(HazelcastRequestsSchema.instance, 5, 256);
         Pipe<HazelcastRequestsSchema> generatorPipe = new Pipe<>(hzReqConfig);
 
-        long seed = 43L;
-        int iterations = 1;
-//        new EncoderTestGenerator(gm, seed, iterations, generatorPipe);
+        long seed = 17L;
+        int iterations = 11;
 
-        // Create Splitter w/Pipes.
         Pipe<HazelcastRequestsSchema> pipeToEncoder = new Pipe<>(hzReqConfig.grow2x());
         new EncoderTestGenerator(gm, seed, iterations, pipeToEncoder);
 
         Pipe<HazelcastRequestsSchema> pipeToExpecteds = new Pipe<>(hzReqConfig.grow2x());
         new EncoderTestGenerator(gm, seed, iterations, pipeToExpecteds);
-
-//        new SplitterStage<>(gm, generatorPipe, pipeToExpecteds, pipeToEncoder);
 
 //        new ConsoleJSONDumpStage<>(gm, pipeToExpecteds);
 //        new ConsoleJSONDumpStage<>(gm, pipeToEncoder, System.err);
@@ -52,8 +46,6 @@ public class SetEncoderTest {
 
         // Create Encoder w/Pipes.
         PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 2048);
-//        PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 1024);
-//        PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 512);
         Pipe<RawDataSchema>[] encoderToValidator = new Pipe[1];
         encoderToValidator[0] = new Pipe<>(rawBytes);
         new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator()); // This is the class under test.

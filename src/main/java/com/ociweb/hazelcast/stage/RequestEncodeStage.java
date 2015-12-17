@@ -13,8 +13,8 @@ public class RequestEncodeStage extends PronghornStage {
     private int iter = 1;
 
     private final Pipe   input;
-    private final Pipe[] outputs;
-    private Pipe[] indexedOutputs;
+    private final Pipe<RawDataSchema>[] outputs;
+    private Pipe<RawDataSchema>[] indexedOutputs;
 
     private final Configurator config;
     private final int modValue;
@@ -32,7 +32,7 @@ public class RequestEncodeStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(RequestEncodeStage.class);
 
     // ToBeResolved: Is this the right place for the config?  Only used for HashKey (which may be sufficient to keep)
-    protected RequestEncodeStage(GraphManager graphManager, Pipe input, Pipe[] outputs, Configurator config) {
+    protected RequestEncodeStage(GraphManager graphManager, Pipe<HazelcastRequestsSchema> input, Pipe<RawDataSchema>[] outputs, Configurator config) {
         super(graphManager, input, outputs);
         this.input = input;
         this.outputs = outputs;
@@ -91,7 +91,7 @@ public class RequestEncodeStage extends PronghornStage {
     public void run() {
 
         while (Pipe.hasContentToRead(input)) {
-            System.err.println("encodeStage: iteration " + iter++);
+            System.err.println("encodeStage: iteration " + iter++ + ", time: " + System.currentTimeMillis());
             // The hash code is always the second field.  Use it to figure out which pipe or pipes
             // will be used, then ensure there is enough room in the intended destinations.
             // If there isn't, return.
@@ -136,7 +136,6 @@ public class RequestEncodeStage extends PronghornStage {
             final int msgIdx = Pipe.takeMsgIdx(input);
 
             // FUTURE: This can be made faster with code generation for every message type.
-//            if (msgIdx > 5) { System.out.println("invalid msgIdx: " + msgIdx); return; }
 
             long inputMsgId = inputFrom.fieldIdScript[msgIdx];
 
@@ -162,7 +161,7 @@ public class RequestEncodeStage extends PronghornStage {
 
                 // GetPartitions
                 case 0x08:
-                    // No-op the only thing going is the Message index and it is already in the pipe.
+                    // No-op the only things being sent are the Message Index and the IDs and they are already in the pipe.
                     break;
 
                 // Size
@@ -177,12 +176,12 @@ public class RequestEncodeStage extends PronghornStage {
 
                 // ContainsAll
                 case 0x0603:
-                    outputBytePos = encodeContainsAll(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeContainsAll(outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Add
                 case 0x0604:
-                    encodeAdd(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
+                    outputBytePos = encodeAdd(outputBytePos, outputByteBuffer, outputByteMask);
                     break;
 
                 // Remove
@@ -242,7 +241,6 @@ public class RequestEncodeStage extends PronghornStage {
             Pipe.publishWrites(targetOutput);
             Pipe.confirmLowLevelRead(input, Pipe.sizeOf(input, msgIdx));
             Pipe.releaseReads(input);
-            return;
         }
     }
 
@@ -306,22 +304,36 @@ public class RequestEncodeStage extends PronghornStage {
         return outputBytePos;
     }
 
-    private int encodeContainsAll(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
-        /*
-        int correlationId = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_CORRELATIONID_2097136);
-        int partitionHash = PipeReader.readInt(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_PARTITIONHASH_2097135);
-        bytePos = beginWriteToOutputPipe(msgIdx, targetOutput, bytePos, byteBuffer, byteMask, correlationId, partitionHash);
-        tempAppendable.setLength(0);
-        PipeReader.readUTF8(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_NAME_458497, tempAppendable);
-        bytePos = writeUTFToByteBuffer(bytePos, byteBuffer, byteMask);
-        int len = PipeReader.readBytes(input, HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_VALUESET_458499, byteBuffer, bytePos, byteMask);
-        */
+    private int encodeContainsAll(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        for (int i = 0; i < 2; i++) {
+            int sourceMetaData = Pipe.takeRingByteMetaData(input);
+            int sourceFieldLength = Pipe.takeRingByteLen(input);
+            int sourceByteMask = Pipe.blobMask(input);
+            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
 
-//        return bytePos + len;
-        return 0;
+            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+            outputBytePos += sourceFieldLength;
+        }
+
+        return outputBytePos;
     }
 
-    private void encodeAdd(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    private int encodeAdd(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        for (int i = 0; i < 2; i++) {
+            int sourceMetaData = Pipe.takeRingByteMetaData(input);
+            int sourceFieldLength = Pipe.takeRingByteLen(input);
+            int sourceByteMask = Pipe.blobMask(input);
+            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
+
+            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+            outputBytePos += sourceFieldLength;
+        }
+
+        return outputBytePos;
     }
 
     private void encodeRemove(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
