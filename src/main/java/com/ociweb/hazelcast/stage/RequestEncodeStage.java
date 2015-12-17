@@ -230,7 +230,7 @@ public class RequestEncodeStage extends PronghornStage {
                     break;
 
                 default:
-                    System.out.println("Not sure what this is. inputMsgId: " + inputMsgId);
+                    System.out.println("RequestEncodeStage MsgTypeCase: Unknown inputMsgId: " + inputMsgId);
                     return;
             }
 
@@ -246,94 +246,32 @@ public class RequestEncodeStage extends PronghornStage {
 
 
     private int encodeDestroyProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        for (int i = 0; i < 2; i++) {
-            int sourceMetaData = Pipe.takeRingByteMetaData(input);
-            int sourceFieldLength = Pipe.takeRingByteLen(input);
-            int sourceByteMask = Pipe.blobMask(input);
-            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
-            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
-
-            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
-            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
-            outputBytePos += sourceFieldLength;
-        }
-        return outputBytePos;
+        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private int encodeCreateProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        for (int i = 0; i < 2; i++) {
-            int sourceMetaData = Pipe.takeRingByteMetaData(input);
-            int sourceFieldLength = Pipe.takeRingByteLen(input);
-            int sourceByteMask = Pipe.blobMask(input);
-            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
-            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
-
-            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
-            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
-            outputBytePos += sourceFieldLength;
-        }
-        return outputBytePos;
+        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private int encodeSize(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        int sourceMetaData = Pipe.takeRingByteMetaData(input);
-        int sourceFieldLength = Pipe.takeRingByteLen(input);
-        int sourceByteMask = Pipe.blobMask(input);
-        byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
-        int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
-
-        outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
-        Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
-        return outputBytePos + sourceFieldLength;
+        return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private int encodeContains(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        // Pick up the two blob fields
-        for (int i = 0; i < 2; i++) {
-            int sourceMetaData = Pipe.takeRingByteMetaData(input);
-            int sourceFieldLength = Pipe.takeRingByteLen(input);
-            int sourceByteMask = Pipe.blobMask(input);
-            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
-            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
-
-            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
-            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
-            outputBytePos += sourceFieldLength;
-        }
-
-        return outputBytePos;
+        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private int encodeContainsAll(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        for (int i = 0; i < 2; i++) {
-            int sourceMetaData = Pipe.takeRingByteMetaData(input);
-            int sourceFieldLength = Pipe.takeRingByteLen(input);
-            int sourceByteMask = Pipe.blobMask(input);
-            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
-            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
-
-            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
-            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
-            outputBytePos += sourceFieldLength;
-        }
-
-        return outputBytePos;
+        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private int encodeAdd(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        for (int i = 0; i < 2; i++) {
-            int sourceMetaData = Pipe.takeRingByteMetaData(input);
-            int sourceFieldLength = Pipe.takeRingByteLen(input);
-            int sourceByteMask = Pipe.blobMask(input);
-            byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
-            int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
-
-            outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
-            Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
-            outputBytePos += sourceFieldLength;
-        }
-
-        return outputBytePos;
+        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private void encodeRemove(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
@@ -361,6 +299,19 @@ public class RequestEncodeStage extends PronghornStage {
     }
 
     private void encodeIsEmpty(int msgIdx, Pipe targetOutput, int bytePos, byte[] byteBuffer, int byteMask) {
+    }
+
+    private int sendBlobContent(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
+        int sourceMetaData = Pipe.takeRingByteMetaData(input);
+        int sourceFieldLength = Pipe.takeRingByteLen(input);
+        int sourceByteMask = Pipe.blobMask(input);
+        byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
+        int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
+
+        outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+        Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
+        outputBytePos += sourceFieldLength;
+        return outputBytePos;
     }
 
     private int beginWriteToOutputPipe(int msgIdx, Pipe<RawDataSchema> targetOutput, int outputBytePos,
