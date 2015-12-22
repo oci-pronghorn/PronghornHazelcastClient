@@ -16,7 +16,7 @@ public class RequestEncodeStage extends PronghornStage {
     private final Pipe<RawDataSchema>[] outputs;
     private Pipe<RawDataSchema>[] indexedOutputs;
 
-    private final Configurator config;
+    private final HazelcastConfigurator config;
     private final int modValue;
     private FieldReferenceOffsetManager inputFrom;
     private int outputsRoundCursor = 0;
@@ -32,7 +32,7 @@ public class RequestEncodeStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(RequestEncodeStage.class);
 
     // ToBeResolved: Is this the right place for the config?  Only used for HashKey (which may be sufficient to keep)
-    protected RequestEncodeStage(GraphManager graphManager, Pipe<HazelcastRequestsSchema> input, Pipe<RawDataSchema>[] outputs, Configurator config) {
+    protected RequestEncodeStage(GraphManager graphManager, Pipe<HazelcastRequestsSchema> input, Pipe<RawDataSchema>[] outputs, HazelcastConfigurator config) {
         super(graphManager, input, outputs);
         this.input = input;
         this.outputs = outputs;

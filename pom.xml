@@ -156,7 +156,7 @@
         <configuration>
         <!-- TODO: add common name space for these obfuscated classes -->
           <options>
-            <option>-keep public class com.ociweb.hazelcast.HazelcastClient {
+            <option>-keep public class com.ociweb.hazelcast.HazelcastSetClient {
                 public static void main(java.lang.String[]);
                 }</option>
             <!--  option>-dontobfuscate</option -->

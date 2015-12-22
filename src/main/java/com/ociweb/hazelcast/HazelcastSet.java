@@ -1,8 +1,8 @@
 package com.ociweb.hazelcast;
 
+import com.ociweb.hazelcast.stage.HazelcastClient;
 import com.ociweb.hazelcast.stage.HazelcastRequestsSchema;
 import com.ociweb.pronghorn.pipe.Pipe;
-import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.pipe.PipeWriter;
 
 import java.io.Serializable;

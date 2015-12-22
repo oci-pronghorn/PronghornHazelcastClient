@@ -6,9 +6,16 @@ import com.ociweb.hazelcast.stage.util.InetSocketAddressImmutable;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
 
-public class Configurator {
+public class HazelcastConfigurator {
 
-    protected Pipe[] OutputPipes = new Pipe[272];
+    private int numberOfConnectionStages = 40;
+    protected Pipe[] encoderToConnectionPipes = new Pipe[numberOfConnectionStages + 1];
+    protected Pipe[] connectionToDecoderPipes = new Pipe[numberOfConnectionStages + 1];
+    protected ConnectionStage[] connectionStage = new ConnectionStage[numberOfConnectionStages];
+
+    protected int getNumberOfConnectionStages() {
+        return numberOfConnectionStages;
+    }
 
     public InetSocketAddress buildInetSocketAddress(int stageId) {
        return new InetSocketAddressImmutable("127.0.0.1",80);

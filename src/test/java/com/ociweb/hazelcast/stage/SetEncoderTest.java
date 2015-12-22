@@ -6,13 +6,9 @@ import com.ociweb.hazelcast.util.ExpectedEncoderMessageBuilder;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
-import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.monitor.MonitorConsoleStage;
-import com.ociweb.pronghorn.stage.route.SplitterStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 import com.ociweb.pronghorn.stage.scheduling.ThreadPerStageScheduler;
-import com.ociweb.pronghorn.stage.test.ConsoleJSONDumpStage;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;
@@ -48,7 +44,7 @@ public class SetEncoderTest {
         PipeConfig<RawDataSchema> rawBytes = new PipeConfig<>(RawDataSchema.instance, 5, 2048);
         Pipe<RawDataSchema>[] encoderToValidator = new Pipe[1];
         encoderToValidator[0] = new Pipe<>(rawBytes);
-        new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new Configurator()); // This is the class under test.
+        new RequestEncodeStage(gm, pipeToEncoder, encoderToValidator, new HazelcastConfigurator()); // This is the class under test.
 
         // Create the class that builds the expected test values
         Pipe<RawDataSchema> expectedMessagesToValidatorPipe = new Pipe<>(rawBytes);

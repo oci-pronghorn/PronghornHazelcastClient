@@ -9,7 +9,6 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.ociweb.hazelcast.stage.util.InetSocketAddressImmutable;
-import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
@@ -54,7 +53,7 @@ public class ConnectionTest {
         Pipe<RawDataSchema> output = new Pipe<>(rawBytesConfig);
         output.initBuffers(); //Must be done manually because we are not using a scheduler for this test
 
-        Configurator conf = new Configurator() {
+        HazelcastConfigurator conf = new HazelcastConfigurator() {
 
             public InetSocketAddress buildInetSocketAddress(int stageId) {
                 return new InetSocketAddressImmutable("127.0.0.1",port);

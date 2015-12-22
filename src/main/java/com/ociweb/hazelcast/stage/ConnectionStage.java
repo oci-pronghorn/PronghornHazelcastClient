@@ -20,7 +20,7 @@ public class ConnectionStage extends PronghornStage {
 
     private final Pipe<RawDataSchema> inputMessagesToSend;
     private final Pipe<RawDataSchema> outputMessagesReceived;
-    private final Configurator conf;
+    private final HazelcastConfigurator conf;
 
     private final long timeLimitMS = 1000;//TODO: where to set this ping?
 
@@ -45,7 +45,7 @@ public class ConnectionStage extends PronghornStage {
     private StringBuilder authResponse = new StringBuilder(128);
 
 
-    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RawDataSchema> output, Configurator conf) {
+    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RawDataSchema> output, HazelcastConfigurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = output;

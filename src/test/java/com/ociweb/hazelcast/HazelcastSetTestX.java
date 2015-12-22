@@ -1,9 +1,6 @@
 package com.ociweb.hazelcast;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.nio.*;
+import com.ociweb.hazelcast.stage.HazelcastClient;
 
 public class HazelcastSetTestX {
 
