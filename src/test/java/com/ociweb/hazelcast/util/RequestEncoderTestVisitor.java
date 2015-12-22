@@ -45,7 +45,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public boolean paused() {
-		return false;
+		return !Pipe.hasRoomForWrite(output);
 	}
 
 	@Override
@@ -54,12 +54,12 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         // Beginning of message
         System.out.println("visitor: TemplateOpen name:" + name);
 //        System.out.println("visitor: TemplateOpen id:" + id);
-        if (Pipe.hasRoomForWrite(output, maxFragmentSize)) {
-            bytePos = Pipe.bytesWorkingHeadPosition(output);
-            startBytePos = bytePos;
-            outBuffer = Pipe.byteBuffer(output);
-            byteMask = Pipe.blobMask(output);
-        }
+
+        bytePos = Pipe.bytesWorkingHeadPosition(output);
+        startBytePos = bytePos;
+        outBuffer = Pipe.byteBuffer(output);
+        byteMask = Pipe.blobMask(output);
+
         rawDataMessageSize = Pipe.addMsgIdx(output, RawDataSchema.MSG_CHUNKEDSTREAM_1);
 
         // Hazelcast requires 4 byte length before the packet.  This value is NOT written here on the front of the
