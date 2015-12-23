@@ -15,11 +15,6 @@ public class HazelcastSet {
     private static Pipe<HazelcastRequestsSchema> pipe;
 
 
-    public static int newSet(HazelcastClient client, int correlationId, CharSequence name) {
-        // use the client to request a Set from the proxy, the client returns a token which will be returned.
-        return 0;
-    }
-
     public static boolean size(HazelcastClient client, int correlationId, int token) {
         if (PipeWriter.tryWriteFragment(pipe, 0x10)) {
             PipeWriter.writeInt(pipe, 0x1, correlationId);

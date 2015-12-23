@@ -28,7 +28,7 @@ public class SetEncoderTest {
         Pipe<HazelcastRequestsSchema> generatorPipe = new Pipe<>(hzReqConfig);
 
         long seed = 17L;
-        int iterations = 11;
+        int iterations = 3;
 
         Pipe<HazelcastRequestsSchema> pipeToEncoder = new Pipe<>(hzReqConfig.grow2x());
         new EncoderTestGenerator(gm, seed, iterations, pipeToEncoder);

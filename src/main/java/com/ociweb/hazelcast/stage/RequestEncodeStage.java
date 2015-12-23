@@ -1,5 +1,6 @@
 package com.ociweb.hazelcast.stage;
 
+import com.ociweb.hazelcast.stage.util.LittleEndianByteHelpers;
 import com.ociweb.pronghorn.pipe.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -308,7 +309,7 @@ public class RequestEncodeStage extends PronghornStage {
         byte[] sourceByteBuffer = Pipe.byteBackingArray(sourceMetaData, input);
         int sourceBytePosition = Pipe.bytePosition(sourceMetaData, input, sourceFieldLength);
 
-        outputBytePos = writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
+        outputBytePos = LittleEndianByteHelpers.writeInt32(sourceFieldLength, outputBytePos, outputByteBuffer, outputByteMask);
         Pipe.copyBytesFromToRing(sourceByteBuffer, sourceBytePosition, sourceByteMask, outputByteBuffer, outputBytePos, outputByteMask, sourceFieldLength);
         outputBytePos += sourceFieldLength;
         return outputBytePos;
@@ -335,9 +336,9 @@ public class RequestEncodeStage extends PronghornStage {
         outputByteBuffer[outputByteMask & outputBytePos++] = (byte) (0xFF & msgId); //type 2 bytes (this is the messageId)
         outputByteBuffer[outputByteMask & outputBytePos++] = (byte) (0xFF & (msgId >> 8));
 
-        outputBytePos = writeInt32(correlationId, outputBytePos, outputByteBuffer, outputByteMask);
+        outputBytePos = LittleEndianByteHelpers.writeInt32(correlationId, outputBytePos, outputByteBuffer, outputByteMask);
 
-        outputBytePos = writeInt32(partitionHash, outputBytePos, outputByteBuffer, outputByteMask);
+        outputBytePos = LittleEndianByteHelpers.writeInt32(partitionHash, outputBytePos, outputByteBuffer, outputByteMask);
 
         outputByteBuffer[outputByteMask & outputBytePos++] = 18;  // 0x12  2 bytes for data offset
         outputByteBuffer[outputByteMask & outputBytePos++] = 0;
@@ -355,7 +356,7 @@ public class RequestEncodeStage extends PronghornStage {
 
     private int writeUTFToByteBuffer(int bytePos, byte[] byteBuffer, int byteMask) {
         int len = tempAppendable.length();
-        bytePos = writeInt32(len, bytePos, byteBuffer, byteMask);
+        bytePos = LittleEndianByteHelpers.writeInt32(len, bytePos, byteBuffer, byteMask);
         byte[] source = tempAppendable.toString().getBytes();
         int c = 0;
         while (c < len) {
@@ -364,13 +365,6 @@ public class RequestEncodeStage extends PronghornStage {
         return bytePos;
     }
 
-    private int writeInt32(int value, int bytePos, byte[] byteBuffer, int byteMask) {
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>8));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>16));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>24));
-        return bytePos;
-    }
 
 
     @Override

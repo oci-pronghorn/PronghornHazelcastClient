@@ -1,5 +1,6 @@
 package com.ociweb.hazelcast.util;
 
+import com.ociweb.hazelcast.stage.util.LittleEndianByteHelpers;
 import com.ociweb.pronghorn.pipe.FieldReferenceOffsetManager;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
@@ -29,9 +30,6 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
     byte[] outBuffer;
     int byteMask;
 
-    //temp
-    private int iter = 30;
-
 	StringBuilder tempStringBuilder =  new StringBuilder(128);
 	ByteBuffer tempByteBuffer = ByteBuffer.allocate(1024);
 
@@ -50,9 +48,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitTemplateOpen(String name, long id) {
-        System.out.println("TestVisitor: iteration " + iter++);
         // Beginning of message
-        System.out.println("visitor: TemplateOpen name:" + name);
 
         bytePos = Pipe.bytesWorkingHeadPosition(output);
         startBytePos = bytePos;
@@ -99,12 +95,12 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitSignedInteger(String name, long id, int value) {
-        bytePos = writeInt32(value, bytePos, outBuffer, byteMask);
+        bytePos = LittleEndianByteHelpers.writeInt32(value, bytePos, outBuffer, byteMask);
 	}
 
 	@Override
 	public void visitUnsignedInteger(String name, long id, long value) {
-        bytePos = writeInt32((int)value, bytePos, outBuffer, byteMask);
+        bytePos = LittleEndianByteHelpers.writeInt32((int)value, bytePos, outBuffer, byteMask);
         if (name.equals("PartitionHash")) {
             outBuffer[byteMask & bytePos++] = 18;  // 0x12 - 2 bytes for data offset
             outBuffer[byteMask & bytePos++] = 0;
@@ -113,7 +109,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public void visitSignedLong(String name, long id, long value) {
-        bytePos = writeInt64(value, bytePos, outBuffer, byteMask);
+        bytePos = LittleEndianByteHelpers.writeInt64(value, bytePos, outBuffer, byteMask);
     }
 
 	@Override
@@ -149,7 +145,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 
 	@Override
 	public ByteBuffer targetBytes(String name, long id, int length) {
-        bytePos = writeInt32(length, bytePos, outBuffer, byteMask);
+        bytePos = LittleEndianByteHelpers.writeInt32(length, bytePos, outBuffer, byteMask);
         return Pipe.wrappedBlobForWriting(bytePos, output);
 	}
 
@@ -167,28 +163,6 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         System.err.println("RequestEncoderTestVisitor shutdown: " + System.currentTimeMillis());
     }
 
-    private int writeInt32(int value, int bytePos, byte[] byteBuffer, int byteMask) {
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>8));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>16));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>24));
-        return bytePos;
-    }
-
-
-    private int writeInt64(long value, int bytePos, byte[] byteBuffer, int byteMask) {
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>8));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>16));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>24));
-
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>32));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>40));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>48));
-        byteBuffer[byteMask & bytePos++] = (byte)(0xFF&(value>>56));
-        return bytePos;
-    }
-
 
     private int encodeAsUTF8(CharSequence s, int len, int mask, byte[] localBuf, int pos) {
         int c = 0;
@@ -197,7 +171,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
         while (c < len) {
             pos = Pipe.encodeSingleChar((int) s.charAt(c++), localBuf, mask, pos);
         }
-        writeInt32((pos-origPos)-4, origPos, outBuffer, byteMask);
+        LittleEndianByteHelpers.writeInt32((pos-origPos)-4, origPos, outBuffer, byteMask);
         return pos;
     }
 

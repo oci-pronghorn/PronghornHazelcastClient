@@ -4,7 +4,6 @@ import com.ociweb.hazelcast.stage.HazelcastClient;
 
 public class HazelcastSetTestX {
 
-
     private static HazelcastClientConfig config;
     private static HazelcastClient client;
 
@@ -27,7 +26,7 @@ public class HazelcastSetTestX {
 //        HazelcastClient.clearCallBack(config, cid);
 
 
-        int fstoken = HazelcastSet.newSet(client, cid, "FirstSet");
+        int fstoken = client.newSet(cid, "FirstSet");
         // Add a string, Must be serializable or identifiable serializble or portable..
         HazelcastSet.add(client, cid, fstoken, "MyStringValue");
 
