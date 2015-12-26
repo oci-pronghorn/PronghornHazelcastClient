@@ -9,7 +9,7 @@ import com.ociweb.pronghorn.pipe.RawDataSchema;
 public class HazelcastConfigurator {
 
     // ToDo: Get these numbers from the configuration file.
-    private int numberOfConnectionStages = 40;
+    private int numberOfConnectionStages = 1;
     // This represents the max length of name (64 to start with) + 4 byte partition hash + 4 byte UTF vli
     private int maxMidAmbleLength = 72;
 
