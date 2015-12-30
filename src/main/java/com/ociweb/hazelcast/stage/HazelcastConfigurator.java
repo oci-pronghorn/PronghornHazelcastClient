@@ -13,10 +13,9 @@ public class HazelcastConfigurator {
     // This represents the max length of name (64 to start with) + 4 byte partition hash + 4 byte UTF vli
     private int maxMidAmbleLength = 72;
 
-    // It's easier to think of the pipes and stages as 1-based.
-    protected Pipe[] encoderToConnectionPipes = new Pipe[numberOfConnectionStages + 1];
-    protected Pipe[] connectionToDecoderPipes = new Pipe[numberOfConnectionStages + 1];
-    protected ConnectionStage[] connectionStage = new ConnectionStage[numberOfConnectionStages + 1];
+    protected Pipe[] encoderToConnectionPipes = new Pipe[numberOfConnectionStages];
+    protected Pipe[] connectionToDecoderPipes = new Pipe[numberOfConnectionStages];
+    protected ConnectionStage[] connectionStage = new ConnectionStage[numberOfConnectionStages];
 
     protected int getNumberOfConnectionStages() {
         return numberOfConnectionStages;

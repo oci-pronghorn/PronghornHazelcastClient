@@ -26,7 +26,6 @@ public class HazelcastClient {
     private static int maximumLengthOfHzVariableFields = 1024;
     private static int minimumNumberOfHzOutgoingFragments = 2;
     private static Pipe<HazelcastRequestsSchema> requestPipe;
-    private static Pipe<HazelcastRequestsSchema> responsePipe;
 
     private static int maximumLengthOfRawVariableFields = 2048;
     private static int minimumNumberOfRawOutgoingFragments = 5;
@@ -57,32 +56,27 @@ public class HazelcastClient {
     public static void buildClientGraph(GraphManager gm, HazelcastConfigurator configurator) {
         PipeConfig<HazelcastRequestsSchema> hzProtocolConfig =
             new PipeConfig<>(HazelcastRequestsSchema.instance, minimumNumberOfHzOutgoingFragments, maximumLengthOfHzVariableFields);
-        requestPipe = new Pipe<>(hzProtocolConfig);
-        responsePipe = new Pipe<>(hzProtocolConfig);
 
         PipeConfig<RawDataSchema> rawDataConfig =
             new PipeConfig<>(RawDataSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
 
         PipeConfig<RequestResponseSchema> responseConfig =
                 new PipeConfig<>(RequestResponseSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
-        
-        for (int pipeNumber = 1; pipeNumber <= configurator.getNumberOfConnectionStages(); pipeNumber++) {
+
+        requestPipe = new Pipe<>(hzProtocolConfig);
+        for (int pipeNumber = 0; pipeNumber < configurator.getNumberOfConnectionStages(); pipeNumber++) {
             configurator.encoderToConnectionPipes[pipeNumber] = new Pipe<RawDataSchema>(rawDataConfig);
             configurator.connectionToDecoderPipes[pipeNumber] = new Pipe<RequestResponseSchema>(responseConfig);
-            configurator.connectionStage[pipeNumber] =
-                new ConnectionStage(gm, configurator.encoderToConnectionPipes[pipeNumber], configurator.connectionToDecoderPipes[pipeNumber], configurator);
         }
 
         new RequestEncodeStage(gm, requestPipe,  configurator.encoderToConnectionPipes, configurator);
+        for (int pipeNumber = 0; pipeNumber < configurator.getNumberOfConnectionStages(); pipeNumber++) {
+            configurator.connectionStage[pipeNumber] =
+                new ConnectionStage(gm, configurator.encoderToConnectionPipes[pipeNumber], configurator.connectionToDecoderPipes[pipeNumber], configurator);
+        }
         new RequestDecodeStage(gm, configurator.connectionToDecoderPipes, configurator);
 
         MonitorConsoleStage.attach(gm);
-    }
-
-
-    public CharSequence getName(int token) {
-        //TODO: This returns the UTF8 name associated with this token.  (Is this method ever going to be useful?)
-        return null;
     }
 
     public int newSet(int correlationId, CharSequence name) {
@@ -113,6 +107,21 @@ public class HazelcastClient {
         // Put the length in the lower 16
         return newToken + tokenLength;
     }
+
+    public Pipe<HazelcastRequestsSchema> getRequestPipe() {
+        return requestPipe;
+    }
+
+
+    public byte[] getMidAmbles() {
+        return midAmbles;
+    }
+
+    public CharSequence getName(int token) {
+        //TODO: This returns the UTF8 name associated with this token.  (Is this method ever going to be useful?)
+        return null;
+    }
+
 
     private synchronized void reallocMidAmble(int len, int newToken) {
         int checkToken = token.get();

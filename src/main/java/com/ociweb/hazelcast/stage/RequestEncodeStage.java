@@ -369,6 +369,6 @@ public class RequestEncodeStage extends PronghornStage {
 
     @Override
     public void shutdown() {
-        System.err.println("RequestEncodeStage shutdown: " + System.currentTimeMillis());
+        System.err.println("RequestEncodeStage shutdown at system time: " + System.currentTimeMillis());
     }
 }
