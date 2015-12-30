@@ -45,12 +45,13 @@ public class ConnectionTest {
 
         GraphManager gm = new GraphManager();
 
-        PipeConfig rawBytesConfig = new PipeConfig(RawDataSchema.instance);;
+        PipeConfig<RawDataSchema> inputConfig = new PipeConfig(RawDataSchema.instance);
+        PipeConfig<RequestResponseSchema> outputConfig = new PipeConfig(RequestResponseSchema.instance);;
 
-        Pipe<RawDataSchema> input = new Pipe<>(rawBytesConfig);
+        Pipe<RawDataSchema> input = new Pipe<>(inputConfig);
         input.initBuffers(); //Must be done manually because we are not using a scheduler for this test
 
-        Pipe<RawDataSchema> output = new Pipe<>(rawBytesConfig);
+        Pipe<RequestResponseSchema> output = new Pipe<>(outputConfig);
         output.initBuffers(); //Must be done manually because we are not using a scheduler for this test
 
         HazelcastConfigurator conf = new HazelcastConfigurator() {

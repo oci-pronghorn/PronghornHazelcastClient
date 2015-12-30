@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+
+	<template name="Response" id="0x1" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
+			
+		<uInt32 name="TypeFlags"         id="0x11" />
+		<uInt32 name="CorrelationID"     id="0x12" />
+		<uInt32 name="PartitionID"       id="0x13" />
+      	<byteVector name="ByteArray" id="0x20"/>
+		
+	</template>
+	
+</templates>	
+	

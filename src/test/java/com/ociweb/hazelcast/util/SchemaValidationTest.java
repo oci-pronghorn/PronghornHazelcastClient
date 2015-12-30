@@ -1,15 +1,12 @@
 package com.ociweb.hazelcast.util;
 
-import com.ociweb.hazelcast.stage.DebugTypeAssertSchema;
-import com.ociweb.hazelcast.stage.HazelcastRequestsSchema;
-import com.ociweb.pronghorn.pipe.util.build.FROMValidation;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-import java.net.URLClassLoader;
-import java.nio.file.Paths;
-import java.util.Arrays;
-
-import static org.junit.Assert.assertTrue;
+import com.ociweb.hazelcast.stage.HazelcastRequestsSchema;
+import com.ociweb.hazelcast.stage.RequestResponseSchema;
+import com.ociweb.pronghorn.pipe.util.build.FROMValidation;
 
 public class SchemaValidationTest {
 
@@ -22,5 +19,15 @@ public class SchemaValidationTest {
     @Test
     public void hzRequestFieldsTest() {
         assertTrue(FROMValidation.testForMatchingLocators(HazelcastRequestsSchema.instance));
+    }
+    
+    @Test
+    public void hzResponseFROMTest() {
+        assertTrue(FROMValidation.testForMatchingFROMs("/HazelcastResponse.xml", RequestResponseSchema.instance));
+    };
+
+    @Test
+    public void hzResponseFieldsTest() {
+        assertTrue(FROMValidation.testForMatchingLocators(RequestResponseSchema.instance));
     }
 }

@@ -23,7 +23,7 @@ public class ConnectionStage extends PronghornStage {
 
     private final Pipe<RawDataSchema> inputMessagesToSend;
     
-    private final Pipe<RawDataSchema>[] outputMessagesReceived;
+    private final Pipe<RequestResponseSchema>[] outputMessagesReceived;
     private final long[]                outputActiveCorrelationId;
     private static final int END_FLAG = 64;
     
@@ -45,8 +45,6 @@ public class ConnectionStage extends PronghornStage {
 
     private ByteBuffer[] pendingWriteBuffers;
 
-    private static final int msgIdx = 0;
-
     private StringBuilder authResponse = new StringBuilder(128);
     
     //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStage 
@@ -56,7 +54,7 @@ public class ConnectionStage extends PronghornStage {
     private LittleEndianDataInputBlobReader<RawDataSchema> reader;
     
     @SuppressWarnings("unchecked")
-    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RawDataSchema> output, HazelcastConfigurator conf) {
+    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RequestResponseSchema> output, HazelcastConfigurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = new Pipe[]{output};
@@ -67,7 +65,7 @@ public class ConnectionStage extends PronghornStage {
         this.conf = conf;
     }
     
-    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RawDataSchema>[] outputs, HazelcastConfigurator conf) {
+    protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RequestResponseSchema>[] outputs, HazelcastConfigurator conf) {
         super(graphManager, input, outputs);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = outputs;
@@ -313,7 +311,7 @@ public class ConnectionStage extends PronghornStage {
                     if (pipeIdx < 0) {
                         return;//do nothing, can not find pipe
                     }
-                    Pipe<RawDataSchema> selectedPipe = outputMessagesReceived[pipeIdx];
+                    Pipe<RequestResponseSchema> selectedPipe = outputMessagesReceived[pipeIdx];
                     
                     //first check if its bigger than the smallest frame size then check that we have the full frame
                     if (Pipe.hasRoomForWrite(selectedPipe)) {
@@ -360,18 +358,22 @@ public class ConnectionStage extends PronghornStage {
                                  
                                  //TODO: write to free pipe, if none found then fail need more pipes.
                                  
-                                 int size = Pipe.addMsgIdx(selectedPipe, msgIdx);
+                                 int responseSize = Pipe.addMsgIdx(selectedPipe, RequestResponseSchema.MSG_RESPONSE_1);
                                  
-                                 //TODO: message out. mask correlationid, partition id?
-                                 
+                                 //send type in the upper 16 and the flags in the lower
+                                 Pipe.addIntValue((type<<16) | flags, selectedPipe);
+                                 Pipe.addIntValue(correlationId, selectedPipe);
+                                 Pipe.addIntValue(partitionId, selectedPipe);
+                                                                  
                                  reader.readInto(selectedPipe, remainingBytes);
                                                               
+                                 Pipe.confirmLowLevelWrite(selectedPipe, responseSize);
                                  Pipe.publishWrites(selectedPipe);
-                                 Pipe.confirmLowLevelWrite(selectedPipe, size);
                                  
                                  if (0 != (flags & END_FLAG)) {
                                      outputActiveCorrelationId[pipeIdx] = Long.MIN_VALUE;
                                  } else {
+                                     //this is only a fragment so block this pipe until we get the end.
                                      outputActiveCorrelationId[pipeIdx] = correlationId;
                                  }
                                  
@@ -395,7 +397,7 @@ public class ConnectionStage extends PronghornStage {
         int j = outputActiveCorrelationId.length;
         while (--j>=0) {
             //only selected if one has not been selected
-            if (selectedPipe<0 && Long.MIN_VALUE == outputActiveCorrelationId[j]) {
+            if (selectedPipe<0 && Long.MIN_VALUE == outputActiveCorrelationId[j] && Pipe.hasRoomForWrite(outputMessagesReceived[j])) {
                 selectedPipe = j;
             }                    
             if (correlationPeek == outputActiveCorrelationId[j]) {
