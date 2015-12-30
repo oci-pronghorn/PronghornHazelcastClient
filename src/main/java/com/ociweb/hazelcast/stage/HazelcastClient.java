@@ -31,7 +31,7 @@ public class HazelcastClient {
     private static int maximumLengthOfRawVariableFields = 2048;
     private static int minimumNumberOfRawOutgoingFragments = 5;
     private static Pipe<RawDataSchema> encoderToConnectionPipe;
-    private static Pipe<RawDataSchema> connectionToDecoderPipe;
+    private static Pipe<RequestResponseSchema> connectionToDecoderPipe;
 
     private GraphManager gm = new GraphManager();
     private HazelcastConfigurator configurator;
@@ -63,9 +63,12 @@ public class HazelcastClient {
         PipeConfig<RawDataSchema> rawDataConfig =
             new PipeConfig<>(RawDataSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
 
+        PipeConfig<RequestResponseSchema> responseConfig =
+                new PipeConfig<>(RequestResponseSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
+        
         for (int pipeNumber = 1; pipeNumber <= configurator.getNumberOfConnectionStages(); pipeNumber++) {
-            configurator.encoderToConnectionPipes[pipeNumber] = new Pipe<>(rawDataConfig);
-            configurator.connectionToDecoderPipes[pipeNumber] = new Pipe<>(rawDataConfig);
+            configurator.encoderToConnectionPipes[pipeNumber] = new Pipe<RawDataSchema>(rawDataConfig);
+            configurator.connectionToDecoderPipes[pipeNumber] = new Pipe<RequestResponseSchema>(responseConfig);
             configurator.connectionStage[pipeNumber] =
                 new ConnectionStage(gm, configurator.encoderToConnectionPipes[pipeNumber], configurator.connectionToDecoderPipes[pipeNumber], configurator);
         }
