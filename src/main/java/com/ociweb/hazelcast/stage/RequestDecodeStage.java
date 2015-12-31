@@ -16,10 +16,26 @@ public class RequestDecodeStage extends PronghornStage {
     private Pipe<RequestResponseSchema>[] inputFromConnection;
     private LittleEndianDataInputBlobReader<RequestResponseSchema>[] readers;
     private static final int msgSize = RawDataSchema.FROM.fragDataSize[RawDataSchema.MSG_CHUNKEDSTREAM_1];
+    
+    private static final int BEGIN_FLAG = 128;    
+    private static final int END_FLAG = 64;
+    
+    
+    private ResponseCallBack callBack;
 
     public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, HazelcastConfigurator configurator) {
         super(gm, inputFromConnection, NONE);
         this.inputFromConnection = inputFromConnection;
+        
+        //get from configurator?
+        this.callBack = new ResponseCallBack() {
+            
+            @Override
+            public void send(int correlationId, int type, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
+                
+                
+            }
+        };
     }
 
     @Override
@@ -50,48 +66,35 @@ public class RequestDecodeStage extends PronghornStage {
         int c = 0;
         while (Pipe.hasContentToRead(pipe)) { //keep going while this pipe has data
 
-            int typeFlagsPeek = Pipe.peekInt(pipe, 4);
-
-
-
             int msgIdx = Pipe.takeMsgIdx(pipe);
             assert(RawDataSchema.MSG_CHUNKEDSTREAM_1 == msgIdx) : "Only one message template is supported";
 
             int typeFlags = Pipe.takeValue(pipe);
             int correlationId = Pipe.takeValue(pipe);
             int partitionId = Pipe.takeValue(pipe);
-
-            //TODO:B, after reading the contextID should hash and send to stage to make the threaded call backs without contention.
-
-            reader.openLowLevelAPIField();
-//            try {
-//                int frameSize     = reader.readInt();
-//                int version       = reader.readByte();
-//                int flags         = reader.readByte();
-//                int type          = reader.readShort();
-//                int correlationId = reader.readInt();
-//                int parititinoId  = reader.readInt();
-//                int dataOffset    = reader.readShort();
-//
-//                reader.skip(dataOffset-18);
-//
-//                //the reader is now positioned to read the payaload.
-//
-//                //TODO: add the coid for in flight check.
-//
-//                //correlation id for assmbly of the pipe.
-//
-//
-//
-//
-//            } catch (IOException e) {
-//                throw new RuntimeException(e);
-//            }
-
-
-
+            
+            if (0!= (BEGIN_FLAG&typeFlags)) {
+                                
+                reader.openLowLevelAPIField();
+                
+            } else {
+                //skip over var field
+                int meta = Pipe.takeRingByteMetaData(pipe);
+                int length    = Pipe.takeRingByteLen(pipe);
+                
+                //TODO: add this length
+                
+            }
             Pipe.confirmLowLevelRead(pipe, msgSize);
             Pipe.readNextWithoutReleasingReadLock(pipe);
+            
+            if (0!= (END_FLAG&typeFlags)) {
+                
+                callBack.send(correlationId,typeFlags>>16,partitionId,reader);
+                
+                Pipe.releaseAllPendingReadLock(pipe);
+                
+            }
         }
 
         return c;

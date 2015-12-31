@@ -1,7 +1,7 @@
 package com.ociweb.hazelcast.stage;
 
-import com.ociweb.hazelcast.HazelcastClientConfig;
 import com.ociweb.hazelcast.stage.HazelcastConfigurator;
+import com.ociweb.hazelcast.HazelcastClientConfig;
 import com.ociweb.hazelcast.stage.ConnectionStage;
 import com.ociweb.hazelcast.stage.HazelcastRequestsSchema;
 import com.ociweb.hazelcast.stage.RequestEncodeStage;
