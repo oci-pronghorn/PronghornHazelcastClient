@@ -6,6 +6,9 @@ import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeWriter;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
@@ -16,7 +19,8 @@ public class HazelcastSet {
         if (PipeWriter.tryWriteFragment(pipe, 0x10)) {
             PipeWriter.writeInt(pipe, 0x1, correlationId);
             PipeWriter.writeInt(pipe, 0x2, -1);
-            PipeWriter.writeUTF8(pipe, 0x1400003, client.getName(token));
+            PipeWriter.writeInt(pipe, 0x3, token);
+            PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
             return true;
         } else {
             return false;
@@ -24,13 +28,14 @@ public class HazelcastSet {
     }
 
 
-    public static boolean contains(HazelcastClient client, int correlationId, CharSequence name, ByteBuffer value) {
+    public static boolean contains(HazelcastClient client, int correlationId, int token, CharSequence name, ByteBuffer value) {
         Pipe<HazelcastRequestsSchema> pipe = client.getRequestPipe();
         if (PipeWriter.tryWriteFragment(pipe, 0x15)) {
             PipeWriter.writeInt(pipe, 0x1, correlationId);
             PipeWriter.writeInt(pipe, 0x2, -1);
-            PipeWriter.writeUTF8(pipe, 0x1400003, name);
-            PipeWriter.writeBytes(pipe, 0x1c00005, value);
+            PipeWriter.writeInt(pipe, 0x3, token);
+            PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
+            PipeWriter.writeBytes(pipe, 0x1c00006, value);
             return true;
         } else {
             return false;
@@ -43,8 +48,9 @@ public class HazelcastSet {
         if (PipeWriter.tryWriteFragment(pipe, 0x1b)) {
             PipeWriter.writeInt(pipe, 0x1, correlationId);
             PipeWriter.writeInt(pipe, 0x2, -1);
-            PipeWriter.writeUTF8(pipe, 0x1400003, client.getName(token));
-            PipeWriter.writeBytes(pipe, 0x1c00005, valueSet);
+            PipeWriter.writeInt(pipe, 0x3, token);
+            PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
+            PipeWriter.writeBytes(pipe, 0x1c00006, valueSet);
             return true;
         } else {
             return false;
@@ -53,17 +59,24 @@ public class HazelcastSet {
 
 
     public static boolean add(HazelcastClient client, int correlationId, int token, Serializable value)  {
-        byte[] bytes = {'A', 'B', 'C'};
-
         Pipe<HazelcastRequestsSchema> pipe = client.getRequestPipe();
         if (PipeWriter.tryWriteFragment(pipe, 0x21)) {
             PipeWriter.writeInt(pipe, 0x1, correlationId);
             PipeWriter.writeInt(pipe, 0x2, -1);
-            PipeWriter.writeUTF8(pipe, 0x1400003, client.getName(token));
-            // TODO:  MOcked -- Serialize value for real soon.
-            PipeWriter.writeBytes(pipe, 0x1c00005, bytes, 0, bytes.length, Pipe.blobMask(pipe));
-            PipeWriter.publishWrites(pipe);
-            return true;
+            PipeWriter.writeInt(pipe, 0x3, token);
+            PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
+                oos.writeObject(value);
+                byte[] valueBytes = bos.toByteArray();
+                PipeWriter.writeBytes(pipe, 0x1c00006, valueBytes, 0, valueBytes.length, Pipe.blobMask(pipe));
+                PipeWriter.publishWrites(pipe);
+                return true;
+            } catch (IOException e) {
+                // ToDo: handle this better for some value of better
+                e.printStackTrace();
+                return false;
+            }
         } else {
             return false;
         }

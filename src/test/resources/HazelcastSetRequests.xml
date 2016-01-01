@@ -29,12 +29,14 @@
     <template   name="Size" id="0x0601" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
         <uInt32 name="CorrelationID" id="0x1ffff0"/>
         <uInt32 name="PartitionHash" id="0x1fffef"/>
+        <uInt32 name="Token" id="0x1fffe0"/>
         <string name="Name" id="0x06ff01" charset="unicode"/>
     </template>
 
     <template name="Contains" id="0x0602" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
         <uInt32 name="CorrelationID" id="0x1ffff0"/>
         <uInt32 name="PartitionHash" id="0x1fffef"/>
+        <uInt32 name="Token" id="0x1fffe0"/>
         <string name="Name" id="0x06ff01" charset="unicode"/>
         <byteVector name="Value" id="0x06ff02"/>
     </template>
@@ -42,6 +44,7 @@
     <template name="ContainsAll" id="0x0603" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
         <uInt32 name="CorrelationID" id="0x1ffff0"/>
         <uInt32 name="PartitionHash" id="0x1fffef"/>
+        <uInt32 name="Token" id="0x1fffe0"/>
         <string name="Name" id="0x06ff01" charset="unicode"/>
         <byteVector name="ValueSet" id="0x06ff03"/>
     </template>
@@ -49,6 +52,7 @@
     <template name="Add" id="0x0604" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
         <uInt32 name="CorrelationID" id="0x1ffff0"/>
         <uInt32 name="PartitionHash" id="0x1fffef"/>
+        <uInt32 name="Token" id="0x1fffe0"/>
         <string name="Name" id="0x06ff01" charset="unicode"/>
         <byteVector name="Value" id="0x06ff02"/>
     </template>
@@ -56,6 +60,7 @@
         <template name="Remove" id="0x0605" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
             <byteVector name="Value" id="0x06ff02"/>
         </template>
@@ -63,6 +68,7 @@
         <template name="AddAll" id="0x0606" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
             <byteVector name="ValueList" id="0x06ff02"/>
         </template>
@@ -70,6 +76,7 @@
         <template name="CompareAndRemoveAll" id="0x0607" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
             <byteVector name="ValueSet" id="0x06ff03"/>
         </template>
@@ -77,6 +84,7 @@
         <template name="CompareAndRetainAll" id="0x0608" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
             <byteVector name="ValueSet" id="0x06ff03"/>
         </template>
@@ -84,18 +92,21 @@
         <template name="Clear" id="0x0609" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
         </template>
 
         <template name="GetAll" id="0x060a" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
         </template>
 
         <template name="AddListener" id="0x060b" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
             <uInt32 name="IncludeValue" id="0x06ff04"> <constant value="1"/> </uInt32>
         </template>
@@ -103,6 +114,7 @@
         <template name="RemoveListener" id="0x060c" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
             <uInt32 name="RegistrationId" id="0x06ff05"> <constant value="1"/> </uInt32>
         </template>
@@ -110,6 +122,7 @@
         <template name="IsEmpty" id="0x060d" xmlns="http://www.fixprotocol.org/ns/fast/td/1.1">
             <uInt32 name="CorrelationID" id="0x1ffff0"/>
             <uInt32 name="PartitionHash" id="0x1fffef"/>
+            <uInt32 name="Token" id="0x1fffe0"/>
             <string name="Name" id="0x06ff01" charset="unicode"/>
         </template>
     -->

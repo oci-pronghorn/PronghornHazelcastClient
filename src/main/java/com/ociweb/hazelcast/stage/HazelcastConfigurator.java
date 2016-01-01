@@ -6,12 +6,18 @@ import com.ociweb.hazelcast.stage.util.InetSocketAddressImmutable;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
 
+/**
+ * The HazelcastConfigurator carries all the configuration information used by the various
+ * stages of a Hazelcast Pronghorn client.
+ */
 public class HazelcastConfigurator {
 
     // ToDo: Get these numbers from the configuration file.
     private int numberOfConnectionStages = 1;
+
     // This represents the max length of name (64 to start with) + 4 byte partition hash + 4 byte UTF vli
     private int maxMidAmbleLength = 72;
+    private CharSequence[] tokenNames = new CharSequence[512];
 
     protected Pipe[] encoderToConnectionPipes = new Pipe[numberOfConnectionStages];
     protected Pipe[] connectionToDecoderPipes = new Pipe[numberOfConnectionStages];
@@ -61,5 +67,13 @@ public class HazelcastConfigurator {
 
     public int getMaxMidAmble() {
         return maxMidAmbleLength;
+    }
+
+    public void setNameForToken(int token, CharSequence name) {
+        tokenNames[token] = name;
+    }
+
+    public CharSequence getNameForToken(int token) {
+        return tokenNames[token];
     }
 }
