@@ -11,13 +11,17 @@ import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 /**
  * This class reads a response from the Hazelcast cluster in RawDataFormat. It decodes the response into a Correlation ID and
  * a HazelcastResponse and invokes the Callback associated with the Correlation ID.
+ * 
+ * The fragmented messages are re-assembed in this stage. As a result, the begin and end flags are always set regardless of 
+ * what was received from the server.
+ * 
  */
 
 public class RequestDecodeStage extends PronghornStage {
 
     private Pipe<RequestResponseSchema>[] inputFromConnection;
     private LittleEndianDataInputBlobReader<RequestResponseSchema>[] readers;
-    private static final int msgSize = RawDataSchema.FROM.fragDataSize[RawDataSchema.MSG_CHUNKEDSTREAM_1];
+    private static final int msgSize = RequestResponseSchema.FROM.fragDataSize[RequestResponseSchema.MSG_RESPONSE_1];
     
     private static final int BEGIN_FLAG = 128;    
     private static final int END_FLAG = 64;
@@ -33,7 +37,7 @@ public class RequestDecodeStage extends PronghornStage {
         this.callBack = new ResponseCallBack() {
             
             @Override
-            public void send(int correlationId, int type, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
+            public void send(int correlationId, short type, short flags, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
                 try {
                     System.out.println(" data from correlatoinId "+correlationId+" with bytes "+reader.available());
                 } catch (IOException e) {
@@ -43,6 +47,7 @@ public class RequestDecodeStage extends PronghornStage {
                 
             }
         };
+        
     }
 
     public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, ResponseCallBack callBack) {
@@ -66,10 +71,10 @@ public class RequestDecodeStage extends PronghornStage {
     @Override
     public void run() {
 
-        int j = inputFromConnection.length;
         int c;
         do {
             c = 0;
+            int j = inputFromConnection.length;
             while (--j>=0) {
                 c += readFromPipe(inputFromConnection[j],readers[j]);
             }
@@ -82,7 +87,7 @@ public class RequestDecodeStage extends PronghornStage {
         while (Pipe.hasContentToRead(pipe)) { //keep going while this pipe has data
 
             int msgIdx = Pipe.takeMsgIdx(pipe);
-            assert(RawDataSchema.MSG_CHUNKEDSTREAM_1 == msgIdx) : "Only one message template is supported";
+            assert(RequestResponseSchema.MSG_RESPONSE_1 == msgIdx) : "Only one message template is supported";
 
             int typeFlags = Pipe.takeValue(pipe);
             int correlationId = Pipe.takeValue(pipe);
@@ -98,14 +103,12 @@ public class RequestDecodeStage extends PronghornStage {
             Pipe.readNextWithoutReleasingReadLock(pipe);
             
             if (0!= (END_FLAG&typeFlags)) {
-                
-                callBack.send(correlationId,typeFlags>>16,partitionId,reader);
-                
+                callBack.send(correlationId,(short)(typeFlags>>16),(short)((BEGIN_FLAG|END_FLAG) | (0x3F&typeFlags)), partitionId,reader);                
                 Pipe.releaseAllPendingReadLock(pipe);
                 
             }
         }
-
+        
         return c;
     }
 

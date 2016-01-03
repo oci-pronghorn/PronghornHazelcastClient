@@ -4,6 +4,6 @@ import com.ociweb.pronghorn.pipe.LittleEndianDataInputBlobReader;
 
 public interface ResponseCallBack {
 
-    void send(int correlationId, int type, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader);
+    void send(int correlationId, short type, short flags, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader);
 
 }
