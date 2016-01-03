@@ -1,5 +1,7 @@
 package com.ociweb.hazelcast.stage;
 
+import java.io.IOException;
+
 import com.ociweb.pronghorn.pipe.LittleEndianDataInputBlobReader;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
@@ -21,7 +23,7 @@ public class RequestDecodeStage extends PronghornStage {
     private static final int END_FLAG = 64;
     
     
-    private ResponseCallBack callBack;
+    private final ResponseCallBack callBack;
 
     public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, HazelcastConfigurator configurator) {
         super(gm, inputFromConnection, NONE);
@@ -32,12 +34,25 @@ public class RequestDecodeStage extends PronghornStage {
             
             @Override
             public void send(int correlationId, int type, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
-                
+                try {
+                    System.out.println(" data from correlatoinId "+correlationId+" with bytes "+reader.available());
+                } catch (IOException e) {
+                   
+                    e.printStackTrace();
+                }
                 
             }
         };
     }
 
+    public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, ResponseCallBack callBack) {
+        super(gm, inputFromConnection, NONE);
+        this.inputFromConnection = inputFromConnection;
+        
+        this.callBack = callBack;
+    }
+    
+    @SuppressWarnings("unchecked")
     @Override
     public void startup() {
 
@@ -73,17 +88,11 @@ public class RequestDecodeStage extends PronghornStage {
             int correlationId = Pipe.takeValue(pipe);
             int partitionId = Pipe.takeValue(pipe);
             
-            if (0!= (BEGIN_FLAG&typeFlags)) {
-                                
-                reader.openLowLevelAPIField();
-                
+            if (0!= (BEGIN_FLAG&typeFlags)) {                                
+                reader.openLowLevelAPIField();                
             } else {
-                //skip over var field
-                int meta = Pipe.takeRingByteMetaData(pipe);
-                int length    = Pipe.takeRingByteLen(pipe);
-                
-                //TODO: add this length
-                
+                //combine this new field with the bytes so far
+                reader.accumLowLevelAPIField();
             }
             Pipe.confirmLowLevelRead(pipe, msgSize);
             Pipe.readNextWithoutReleasingReadLock(pipe);
