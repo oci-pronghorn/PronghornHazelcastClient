@@ -111,10 +111,10 @@ public class RequestDecodeStageTest {
             int c = 0;
             while (--i>=0) {
                 byte[] testBlock = buildTestData(i);            
-                int type = 1;
+                int type = (i+1);
                 int flags = 3 | BEGIN_FLAG | END_FLAG;//never fragmented.
                 int corr = 100+i;
-                int par  = 3;
+                int par  = 3+i;
                             
                 assertEquals(type,  collector.tArray[c]);
                 assertEquals(flags, collector.fArray[c]);
@@ -144,10 +144,10 @@ public class RequestDecodeStageTest {
             byte[] testBlock = buildTestData(i);
             
             int j = parts;
-            int type = 1<<16;
+            int type = (i+1)<<16;
             int flags = 3;
             int corr = 100+i;
-            int par  = 3;
+            int par  = 3+i;
             int blockStep = testBlock.length/3;
             int blockStart = 0;
             
