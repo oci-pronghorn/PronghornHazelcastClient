@@ -7,6 +7,12 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import com.hazelcast.client.impl.protocol.util.Int2ObjectHashMap;
+import com.hazelcast.nio.ClassLoaderUtil;
+import com.hazelcast.nio.serialization.DataSerializable;
+import com.hazelcast.nio.serialization.DataSerializableFactory;
+import com.hazelcast.nio.serialization.StreamSerializer;
+import com.ociweb.hazelcast.HZDataInput;
 import com.ociweb.pronghorn.pipe.LittleEndianDataInputBlobReader;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeConfig;
@@ -39,7 +45,7 @@ public class RequestDecodeStageTest {
         }
         
         @Override
-        public void send(int correlationId, short type, short flags, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
+        public void send(int correlationId, short type, short flags, int partitionId, HZDataInput reader) {
          
           cArray[instance] = correlationId;
           tArray[instance] = type;
@@ -60,7 +66,7 @@ public class RequestDecodeStageTest {
     @Test    
     public void testDecoderAssemblyOfFragments() {
         
-        int maxInputPipesCount = 70; //this is how many connections and therefore members of the cluster.
+        int maxInputPipesCount = 48; //this is how many connections and therefore members of the cluster.
         int maxParts = 4;
         PipeConfig<RequestResponseSchema> config = new PipeConfig<RequestResponseSchema>(RequestResponseSchema.instance, 30, 5000);
         
@@ -179,7 +185,72 @@ public class RequestDecodeStageTest {
         return testBlock;
     }
 
-
+//    @Test
+//    public void serailziationTest() {
+//        //Mostly checking for compatibility.
+//        LittleEndianDataInputBlobReader<RequestResponseSchema> reader = null;
+//        
+//        //TODO: need to use my own map for factories?
+//        final Int2ObjectHashMap<DataSerializableFactory> factories = new Int2ObjectHashMap<DataSerializableFactory>();
+//        
+//        
+//        try {
+//            DataSerializable ds = null;
+//            boolean isIdentified = reader.readBoolean();//byte !=0
+//            if (isIdentified) {
+//                
+//                //what if the caller reads the values then does its own construction?
+//                //   isIdentified?
+//                //   getfactory
+//                //   getid
+//                //   do your own create
+//                //    obj = factories.get(factoryId).create(id);
+//                //   obj.readData(reader)
+//                
+//                //  obj = DataSerializable.decode(client, reader); //enable replacement.
+//                
+//                // for faster
+//                //  obj = new Thing();
+//                //  obj.readData(reader);
+//                
+//                int factoryId = reader.readInt();
+//                final DataSerializableFactory dsf = factories.get(factoryId);//TODO: cache last.
+//                if (dsf != null) {
+//                    int id = reader.readInt();
+//                    ds = dsf.create(id);//TODO: poly call and contains switch.
+//                    if (ds != null) {
+//                    } else {                    
+//                        throw new UnsupportedOperationException();
+//                    }
+//                } else {
+//                    throw new UnsupportedOperationException();
+//                    
+//                }
+//                
+//            } else {
+//                String className = reader.readUTF();//string match on names of primitives then this class.
+//                ds = ClassLoaderUtil.newInstance(reader.getClass().getClassLoader(), className);
+//                
+//            }
+//            
+//            //Must implement ObjectDataInput  in the reader for this, need new extending object
+//            //ds.readData(reader);
+//            //returns ds as new object
+//            
+//        
+//        
+//        } catch (IOException e) {
+//           throw new RuntimeException();
+//        } catch (Exception e) {
+//            throw new RuntimeException();
+//        }
+//        
+//        
+//        
+//        
+//        
+//        
+//    }
     
     
     

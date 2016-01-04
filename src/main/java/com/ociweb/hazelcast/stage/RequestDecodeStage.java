@@ -2,6 +2,7 @@ package com.ociweb.hazelcast.stage;
 
 import java.io.IOException;
 
+import com.ociweb.hazelcast.HZDataInput;
 import com.ociweb.pronghorn.pipe.LittleEndianDataInputBlobReader;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
@@ -20,7 +21,7 @@ import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 public class RequestDecodeStage extends PronghornStage {
 
     private Pipe<RequestResponseSchema>[] inputFromConnection;
-    private LittleEndianDataInputBlobReader<RequestResponseSchema>[] readers;
+    private HZDataInput[] readers;
     private static final int msgSize = RequestResponseSchema.FROM.fragDataSize[RequestResponseSchema.MSG_RESPONSE_1];
     
     private static final int BEGIN_FLAG = 128;    
@@ -37,7 +38,7 @@ public class RequestDecodeStage extends PronghornStage {
         this.callBack = new ResponseCallBack() {
             
             @Override
-            public void send(int correlationId, short type, short flags, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
+            public void send(int correlationId, short type, short flags, int partitionId, HZDataInput reader) {
                 try {
                     System.out.println(" data from correlatoinId "+correlationId+" with bytes "+reader.available());
                 } catch (IOException e) {
@@ -62,9 +63,9 @@ public class RequestDecodeStage extends PronghornStage {
     public void startup() {
 
         int j = inputFromConnection.length;
-        readers = new LittleEndianDataInputBlobReader[j];
+        readers = new HZDataInput[j];
         while (--j>=0) {
-            readers[j]=new LittleEndianDataInputBlobReader<RequestResponseSchema>(inputFromConnection[j]);
+            readers[j]=new HZDataInput(inputFromConnection[j]);
         }
     }
 
@@ -82,7 +83,7 @@ public class RequestDecodeStage extends PronghornStage {
 
     }
 
-    private int readFromPipe(Pipe<RequestResponseSchema> pipe, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
+    private int readFromPipe(Pipe<RequestResponseSchema> pipe, HZDataInput reader) {
         int c = 0;
         while (Pipe.hasContentToRead(pipe)) { //keep going while this pipe has data
 
