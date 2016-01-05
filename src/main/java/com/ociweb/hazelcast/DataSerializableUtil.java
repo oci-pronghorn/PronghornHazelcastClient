@@ -1,7 +1,6 @@
 package com.ociweb.hazelcast;
 
 import com.hazelcast.nio.serialization.DataSerializable;
-import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.ociweb.hazelcast.stage.HazelcastClient;
 
 public class DataSerializableUtil {
