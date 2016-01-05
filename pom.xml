@@ -36,10 +36,10 @@
           <version>1.7.12</version>
           <scope>runtime</scope>
         </dependency>
-
-		<dependency>
+        
+		<dependency><!-- only here until we determine which classes/interfaces must be duplicated. -->
 			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast</artifactId>
+			<artifactId>hazelcast-all</artifactId>
 			<version>3.5.1</version>
 			<scope>test</scope>
 		</dependency>
@@ -52,6 +52,7 @@
 		  	  <scope>test</scope>
 			  <optional>false</optional>
 		</dependency>
+		
         <dependency>
             <groupId>com.ociweb</groupId>
             <artifactId>PronghornPipes</artifactId>

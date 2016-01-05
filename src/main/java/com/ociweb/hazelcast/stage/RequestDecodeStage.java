@@ -1,5 +1,8 @@
 package com.ociweb.hazelcast.stage;
 
+import java.io.IOException;
+
+import com.ociweb.hazelcast.HZDataInput;
 import com.ociweb.pronghorn.pipe.LittleEndianDataInputBlobReader;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
@@ -9,19 +12,23 @@ import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 /**
  * This class reads a response from the Hazelcast cluster in RawDataFormat. It decodes the response into a Correlation ID and
  * a HazelcastResponse and invokes the Callback associated with the Correlation ID.
+ * 
+ * The fragmented messages are re-assembed in this stage. As a result, the begin and end flags are always set regardless of 
+ * what was received from the server.
+ * 
  */
 
 public class RequestDecodeStage extends PronghornStage {
 
     private Pipe<RequestResponseSchema>[] inputFromConnection;
-    private LittleEndianDataInputBlobReader<RequestResponseSchema>[] readers;
-    private static final int msgSize = RawDataSchema.FROM.fragDataSize[RawDataSchema.MSG_CHUNKEDSTREAM_1];
+    private HZDataInput[] readers;
+    private static final int msgSize = RequestResponseSchema.FROM.fragDataSize[RequestResponseSchema.MSG_RESPONSE_1];
     
     private static final int BEGIN_FLAG = 128;    
     private static final int END_FLAG = 64;
     
     
-    private ResponseCallBack callBack;
+    private final ResponseCallBack callBack;
 
     public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, HazelcastConfigurator configurator) {
         super(gm, inputFromConnection, NONE);
@@ -31,30 +38,44 @@ public class RequestDecodeStage extends PronghornStage {
         this.callBack = new ResponseCallBack() {
             
             @Override
-            public void send(int correlationId, int type, int partitionId, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
-                
+            public void send(int correlationId, short type, short flags, int partitionId, HZDataInput reader) {
+                try {
+                    System.out.println(" data from correlatoinId "+correlationId+" with bytes "+reader.available());
+                } catch (IOException e) {
+                   
+                    e.printStackTrace();
+                }
                 
             }
         };
+        
     }
 
+    public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, ResponseCallBack callBack) {
+        super(gm, inputFromConnection, NONE);
+        this.inputFromConnection = inputFromConnection;
+        
+        this.callBack = callBack;
+    }
+    
+    @SuppressWarnings("unchecked")
     @Override
     public void startup() {
 
         int j = inputFromConnection.length;
-        readers = new LittleEndianDataInputBlobReader[j];
+        readers = new HZDataInput[j];
         while (--j>=0) {
-            readers[j]=new LittleEndianDataInputBlobReader<RequestResponseSchema>(inputFromConnection[j]);
+            readers[j]=new HZDataInput(inputFromConnection[j]);
         }
     }
 
     @Override
     public void run() {
 
-        int j = inputFromConnection.length;
         int c;
         do {
             c = 0;
+            int j = inputFromConnection.length;
             while (--j>=0) {
                 c += readFromPipe(inputFromConnection[j],readers[j]);
             }
@@ -62,41 +83,33 @@ public class RequestDecodeStage extends PronghornStage {
 
     }
 
-    private int readFromPipe(Pipe<RequestResponseSchema> pipe, LittleEndianDataInputBlobReader<RequestResponseSchema> reader) {
+    private int readFromPipe(Pipe<RequestResponseSchema> pipe, HZDataInput reader) {
         int c = 0;
         while (Pipe.hasContentToRead(pipe)) { //keep going while this pipe has data
 
             int msgIdx = Pipe.takeMsgIdx(pipe);
-            assert(RawDataSchema.MSG_CHUNKEDSTREAM_1 == msgIdx) : "Only one message template is supported";
+            assert(RequestResponseSchema.MSG_RESPONSE_1 == msgIdx) : "Only one message template is supported";
 
             int typeFlags = Pipe.takeValue(pipe);
             int correlationId = Pipe.takeValue(pipe);
             int partitionId = Pipe.takeValue(pipe);
             
-            if (0!= (BEGIN_FLAG&typeFlags)) {
-                                
-                reader.openLowLevelAPIField();
-                
+            if (0!= (BEGIN_FLAG&typeFlags)) {                                
+                reader.openLowLevelAPIField();                
             } else {
-                //skip over var field
-                int meta = Pipe.takeRingByteMetaData(pipe);
-                int length    = Pipe.takeRingByteLen(pipe);
-                
-                //TODO: add this length
-                
+                //combine this new field with the bytes so far
+                reader.accumLowLevelAPIField();
             }
             Pipe.confirmLowLevelRead(pipe, msgSize);
             Pipe.readNextWithoutReleasingReadLock(pipe);
             
             if (0!= (END_FLAG&typeFlags)) {
-                
-                callBack.send(correlationId,typeFlags>>16,partitionId,reader);
-                
+                callBack.send(correlationId,(short)(typeFlags>>16),(short)((BEGIN_FLAG|END_FLAG) | (0x3F&typeFlags)), partitionId,reader);                
                 Pipe.releaseAllPendingReadLock(pipe);
                 
             }
         }
-
+        
         return c;
     }
 
