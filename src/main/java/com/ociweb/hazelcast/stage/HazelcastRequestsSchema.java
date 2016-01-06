@@ -6,11 +6,11 @@ import com.ociweb.pronghorn.pipe.MessageSchema;
 public class HazelcastRequestsSchema extends MessageSchema {
 
     public final static FieldReferenceOffsetManager FROM = new FieldReferenceOffsetManager(
-        new int[]{0xc0400005, 0x80000000, 0x80000001, 0xa8000000, 0xa8000001, 0xc0200005, 0xc0400005, 0x80000000, 0x80000001, 0xa8000000, 0xa8000001, 0xc0200005, 0xc0400003, 0x80000000, 0x80000001, 0xc0200003, 0xc0400005, 0x80000000, 0x80000001, 0x80000002, 0xa8000002, 0xc0200005, 0xc0400006, 0x80000000, 0x80000001, 0x80000002, 0xa8000002, 0xb8000003, 0xc0200006, 0xc0400006, 0x80000000, 0x80000001, 0x80000002, 0xa8000002, 0xb8000004, 0xc0200006, 0xc0400006, 0x80000000, 0x80000001, 0x80000002, 0xa8000002, 0xb8000003, 0xc0200006},
-        (short) 0,
-        new String[]{"CreateProxy", "CorrelationID", "PartitionHash", "Name", "ServiceName", null, "DestroyProxy", "CorrelationID", "PartitionHash", "Name", "ServiceName", null, "GetPartitions", "CorrelationID", "PartitionHash", null, "Size", "CorrelationID", "PartitionHash", "Token", "Name", null, "Contains", "CorrelationID", "PartitionHash", "Token", "Name", "Value", null, "ContainsAll", "CorrelationID", "PartitionHash", "Token", "Name", "ValueSet", null, "Add", "CorrelationID", "PartitionHash", "Token", "Name", "Value", null},
-        new long[]{5, 2097136, 2097135, 2096903, 2096904, 0, 6, 2097136, 2097135, 2096903, 2096904, 0, 8, 2097136, 2097135, 0, 1537, 2097136, 2097135, 2097120, 458497, 0, 1538, 2097136, 2097135, 2097120, 458497, 458498, 0, 1539, 2097136, 2097135, 2097120, 458497, 458499, 0, 1540, 2097136, 2097135, 2097120, 458497, 458498, 0},
-        new String[]{"global", null, null, null, null, null, "global", null, null, null, null, null, "global", null, null, null, "global", null, null, null, null, null, "global", null, null, null, null, null, null, "global", null, null, null, null, null, null, "global", null, null, null, null, null, null},
+        new int[]{0xc0400005,0x80000000,0x80000001,0xa8000000,0xa8000001,0xc0200005,0xc0400005,0x80000000,0x80000001,0xa8000000,0xa8000001,0xc0200005,0xc0400003,0x80000000,0x80000001,0xc0200003,0xc0400004,0x80000000,0x80000001,0xa8000002,0xc0200004,0xc0400005,0x80000000,0x80000001,0xa8000002,0xb8000003,0xc0200005,0xc0400005,0x80000000,0x80000001,0xa8000002,0xb8000004,0xc0200005,0xc0400005,0x80000000,0x80000001,0xa8000002,0xb8000003,0xc0200005},
+        (short)0,
+        new String[]{"CreateProxy","CorrelationID","PartitionHash","Name","ServiceName",null,"DestroyProxy","CorrelationID","PartitionHash","Name","ServiceName",null,"GetPartitions","CorrelationID","PartitionHash",null,"Size","CorrelationID","PartitionHash","Name",null,"Contains","CorrelationID","PartitionHash","Name","Value",null,"ContainsAll","CorrelationID","PartitionHash","Name","ValueSet",null,"Add","CorrelationID","PartitionHash","Name","Value",null},
+        new long[]{5, 2097136, 2097135, 2096903, 2096904, 0, 6, 2097136, 2097135, 2096903, 2096904, 0, 8, 2097136, 2097135, 0, 1537, 2097136, 2097135, 458497, 0, 1538, 2097136, 2097135, 458497, 458498, 0, 1539, 2097136, 2097135, 458497, 458499, 0, 1540, 2097136, 2097135, 458497, 458498, 0},
+        new String[]{"global",null,null,null,null,null,"global",null,null,null,null,null,"global",null,null,null,"global",null,null,null,null,"global",null,null,null,null,null,"global",null,null,null,null,null,"global",null,null,null,null,null},
         "HazelcastSetRequests.xml",
         new long[]{2, 2, 0},
         new int[]{2, 2, 0});
@@ -38,25 +38,21 @@ public class HazelcastRequestsSchema extends MessageSchema {
     public static final int MSG_SIZE_1537 = 0x00000010;
     public static final int MSG_SIZE_1537_FIELD_CORRELATIONID_2097136 = 0x00000001;
     public static final int MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135 = 0x00000002;
-    public static final int MSG_SIZE_1537_FIELD_TOKEN_2097120 = 0x00000003;
-    public static final int MSG_SIZE_1537_FIELD_NAME_458497 = 0x01400004;
-    public static final int MSG_CONTAINS_1538 = 0x00000016;
+    public static final int MSG_SIZE_1537_FIELD_NAME_458497 = 0x01400003;
+    public static final int MSG_CONTAINS_1538 = 0x00000015;
     public static final int MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136 = 0x00000001;
     public static final int MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135 = 0x00000002;
-    public static final int MSG_CONTAINS_1538_FIELD_TOKEN_2097120 = 0x00000003;
-    public static final int MSG_CONTAINS_1538_FIELD_NAME_458497 = 0x01400004;
-    public static final int MSG_CONTAINS_1538_FIELD_VALUE_458498 = 0x01C00006;
-    public static final int MSG_CONTAINSALL_1539 = 0x0000001D;
+    public static final int MSG_CONTAINS_1538_FIELD_NAME_458497 = 0x01400003;
+    public static final int MSG_CONTAINS_1538_FIELD_VALUE_458498 = 0x01C00005;
+    public static final int MSG_CONTAINSALL_1539 = 0x0000001B;
     public static final int MSG_CONTAINSALL_1539_FIELD_CORRELATIONID_2097136 = 0x00000001;
     public static final int MSG_CONTAINSALL_1539_FIELD_PARTITIONHASH_2097135 = 0x00000002;
-    public static final int MSG_CONTAINSALL_1539_FIELD_TOKEN_2097120 = 0x00000003;
-    public static final int MSG_CONTAINSALL_1539_FIELD_NAME_458497 = 0x01400004;
-    public static final int MSG_CONTAINSALL_1539_FIELD_VALUESET_458499 = 0x01C00006;
-    public static final int MSG_ADD_1540 = 0x00000024;
+    public static final int MSG_CONTAINSALL_1539_FIELD_NAME_458497 = 0x01400003;
+    public static final int MSG_CONTAINSALL_1539_FIELD_VALUESET_458499 = 0x01C00005;
+    public static final int MSG_ADD_1540 = 0x00000021;
     public static final int MSG_ADD_1540_FIELD_CORRELATIONID_2097136 = 0x00000001;
     public static final int MSG_ADD_1540_FIELD_PARTITIONHASH_2097135 = 0x00000002;
-    public static final int MSG_ADD_1540_FIELD_TOKEN_2097120 = 0x00000003;
-    public static final int MSG_ADD_1540_FIELD_NAME_458497 = 0x01400004;
-    public static final int MSG_ADD_1540_FIELD_VALUE_458498 = 0x01C00006;
+    public static final int MSG_ADD_1540_FIELD_NAME_458497 = 0x01400003;
+    public static final int MSG_ADD_1540_FIELD_VALUE_458498 = 0x01C00005;
 }
 

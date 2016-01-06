@@ -6,10 +6,7 @@ import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.PipeWriter;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.nio.ByteBuffer;
 
 public class HazelcastSet {
@@ -63,7 +60,9 @@ public class HazelcastSet {
         if (PipeWriter.tryWriteFragment(pipe, 0x21)) {
             PipeWriter.writeInt(pipe, 0x1, correlationId);
             PipeWriter.writeInt(pipe, 0x2, -1);
-            PipeWriter.writeInt(pipe, 0x3, token);
+            // FUTURE: The following two lines should be used when tokens go into play
+//            PipeWriter.writeInt(pipe, 0x3, token);
+//            PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
             PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
@@ -82,5 +81,10 @@ public class HazelcastSet {
         }
     }
 
+    // TODO:  Implement
+    public static boolean add(HazelcastClient client, int correlationId, int token, Externalizable value)  {
+        Pipe<HazelcastRequestsSchema> pipe = client.getRequestPipe();
+        return false;
+    }
 }
 

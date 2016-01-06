@@ -18,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,21 +41,26 @@ public class HazelcastClient {
     private byte[] midAmbles;
     private int penultimateMidAmbleEntry = 0;
 
-    public HazelcastClient(HazelcastClientConfig config) {
+
+    // ToDo: This is a temp cid location for the names until the tokens are put into play.
+    private Map<Integer, CharSequence> names = new HashMap<>(10);
+
+    public HazelcastClient(HazelcastClientConfig config, ResponseCallBack callBack) {
 
         configurator = new HazelcastConfigurator();
+        // Future: Use this to circumvent the conversion of the name to UTF-8 for every call.
         midAmbles = new byte[(configurator.getMaxMidAmble() * 50)];
         penultimateMidAmbleEntry = midAmbles.length - (configurator.getMaxMidAmble());
 
-        HazelcastClient.buildClientGraph(gm, configurator);
+        HazelcastClient.buildClientGraph(gm, configurator, callBack);
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
         // ToDo: TEMP -- remove this later, but until this is running ...
-        scheduler.awaitTermination(300, TimeUnit.SECONDS);
+        scheduler.awaitTermination(3000, TimeUnit.SECONDS);
     }
 
-    public static void buildClientGraph(GraphManager gm, HazelcastConfigurator configurator) {
+    public static void buildClientGraph(GraphManager gm, HazelcastConfigurator configurator, ResponseCallBack callBack) {
         PipeConfig<HazelcastRequestsSchema> hzProtocolConfig =
             new PipeConfig<>(HazelcastRequestsSchema.instance, minimumNumberOfHzOutgoingFragments, maximumLengthOfHzVariableFields);
 
@@ -61,7 +68,7 @@ public class HazelcastClient {
             new PipeConfig<>(RawDataSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
 
         PipeConfig<RequestResponseSchema> responseConfig =
-                new PipeConfig<>(RequestResponseSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
+            new PipeConfig<>(RequestResponseSchema.instance, minimumNumberOfRawOutgoingFragments, maximumLengthOfRawVariableFields);
 
         requestPipe = new Pipe<>(hzProtocolConfig);
         for (int pipeNumber = 0; pipeNumber < configurator.getNumberOfConnectionStages(); pipeNumber++) {
@@ -69,12 +76,12 @@ public class HazelcastClient {
             configurator.connectionToDecoderPipes[pipeNumber] = new Pipe<RequestResponseSchema>(responseConfig);
         }
 
-        new RequestEncodeStage(gm, requestPipe,  configurator.encoderToConnectionPipes, configurator);
+        new RequestEncodeStage(gm, requestPipe, configurator.encoderToConnectionPipes, configurator);
         for (int pipeNumber = 0; pipeNumber < configurator.getNumberOfConnectionStages(); pipeNumber++) {
             configurator.connectionStage[pipeNumber] =
                 new ConnectionStage(gm, configurator.encoderToConnectionPipes[pipeNumber], configurator.connectionToDecoderPipes[pipeNumber], configurator);
         }
-        new RequestDecodeStage(gm, configurator.connectionToDecoderPipes, configurator);
+        new RequestDecodeStage(gm, configurator.connectionToDecoderPipes, callBack);
 
         MonitorConsoleStage.attach(gm);
     }
@@ -105,7 +112,9 @@ public class HazelcastClient {
         // Put the position in the array in the top 16
         newToken <<= 16;
         // Put the length in the lower 16
-        return newToken + tokenLength;
+        int returnToken = newToken + tokenLength;
+        names.put(new Integer(returnToken), name);
+        return returnToken;
     }
 
     public Pipe<HazelcastRequestsSchema> getRequestPipe() {
@@ -117,9 +126,9 @@ public class HazelcastClient {
         return midAmbles;
     }
 
+    //TODO: This returns the UTF8 name associated with this token. Use this until tokens are implemented.
     public CharSequence getName(int token) {
-        //TODO: This returns the UTF8 name associated with this token.  (Is this method ever going to be useful?)
-        return null;
+        return names.get(token);
     }
 
 
@@ -138,36 +147,35 @@ public class HazelcastClient {
                 return writeProxyInfo(correlationId, name, serviceName);
             } else {
                 return false;
+            }
         }
-    }
 
-    public static boolean destroyProxy(int correlationId, CharSequence name, CharSequence serviceName) {
-        if (PipeWriter.tryWriteFragment(requestPipe, 0x6)) {
-            return writeProxyInfo(correlationId, name, serviceName);
-        } else {
-            return false;
+        public static boolean destroyProxy(int correlationId, CharSequence name, CharSequence serviceName) {
+            if (PipeWriter.tryWriteFragment(requestPipe, 0x6)) {
+                return writeProxyInfo(correlationId, name, serviceName);
+            } else {
+                return false;
+            }
         }
-    }
 
 
-    public static boolean getPartitions(int correlationId) {
-        if (PipeWriter.tryWriteFragment(requestPipe, 0xc)) {
+        public static boolean getPartitions(int correlationId) {
+            if (PipeWriter.tryWriteFragment(requestPipe, 0xc)) {
+                PipeWriter.writeInt(requestPipe, 0x1, correlationId);
+                PipeWriter.writeInt(requestPipe, 0x2, -1);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private static boolean writeProxyInfo(int correlationId, CharSequence name, CharSequence serviceName) {
             PipeWriter.writeInt(requestPipe, 0x1, correlationId);
             PipeWriter.writeInt(requestPipe, 0x2, -1);
+            PipeWriter.writeUTF8(requestPipe, 0x1400003, name);
+            PipeWriter.writeUTF8(requestPipe, 0x1400005, serviceName);
             return true;
-        } else {
-            return false;
         }
-    }
-
-
-    private static boolean writeProxyInfo(int correlationId, CharSequence name, CharSequence serviceName) {
-        PipeWriter.writeInt(requestPipe, 0x1, correlationId);
-        PipeWriter.writeInt(requestPipe, 0x2, -1);
-        PipeWriter.writeUTF8(requestPipe, 0x1400003, name);
-        PipeWriter.writeUTF8(requestPipe, 0x1400005, serviceName);
-        return true;
-    }
     }
 }
 
