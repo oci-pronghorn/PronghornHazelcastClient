@@ -88,11 +88,11 @@ public class RequestEncodeStage extends PronghornStage {
         // TODO(cas): This is where the modValue will be set to reflect the number of machines in the cluster.
     }
 
+
     @Override
     public void run() {
 
         while (Pipe.hasContentToRead(input)) {
-            System.err.println("encodeStage: iteration " + iter++ + ", time: " + System.currentTimeMillis());
             // The hash code is always the second field.  Use it to figure out which pipe or pipes
             // will be used, then ensure there is enough room in the intended destinations.
             // If there isn't, return.
@@ -115,7 +115,6 @@ public class RequestEncodeStage extends PronghornStage {
 
                 if (outputsRoundCursor == original) {
                     // no room was found
-                    System.err.println("encodeStage: return 1");
                     return;
                 }
                 targetOutput = outputs[outputsRoundCursor];
@@ -126,7 +125,6 @@ public class RequestEncodeStage extends PronghornStage {
                 // The invoking facility will be responsible for sending the message back to try later.
                 // Note Well: One output message may only be a fragment of the full message to be sent.
                 if (!Pipe.hasRoomForWrite(targetOutput)) {
-                    System.err.println("encodeStage: return 2");
                     return;
                 }
             }

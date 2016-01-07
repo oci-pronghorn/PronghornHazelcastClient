@@ -19,7 +19,8 @@ public class HazelcastSetTestX {
         int cid = 1;
 
         int fstoken = client.newSet(cid, "FirstSet");
-        // Add a string, Must be serializable or identifiable serializble or portable..
+
+        // Add a string, Must be serializable or identifiable serializable or portable..
         HazelcastSet.add(client, cid, fstoken, "MyStringValue");
 
         // Add a low level object, can be used for very tight serialization
@@ -31,6 +32,8 @@ public class HazelcastSetTestX {
 
         //request the size and the callback will get the response
         HazelcastSet.size(client, cid, fstoken);
+
+        client.stopScheduler();
     }
 
     private class SetTestCallBack implements ResponseCallBack {
@@ -38,6 +41,7 @@ public class HazelcastSetTestX {
         @Override
         public void send(int correlationId, short type, short flags, int partitionId, HZDataInput dataSource) {
             // assert((short)0x000C = flags) : "flags are not start and end, actual values: " + flags);
+            System.err.println("SetTestX: callback");
         }
     }
 

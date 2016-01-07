@@ -34,6 +34,8 @@ public class HazelcastClient {
     private static Pipe<RawDataSchema> encoderToConnectionPipe;
     private static Pipe<RequestResponseSchema> connectionToDecoderPipe;
 
+    private ThreadPerStageScheduler scheduler;
+
     private GraphManager gm = new GraphManager();
     private HazelcastConfigurator configurator;
 
@@ -53,11 +55,8 @@ public class HazelcastClient {
         penultimateMidAmbleEntry = midAmbles.length - (configurator.getMaxMidAmble());
 
         HazelcastClient.buildClientGraph(gm, configurator, callBack);
-        ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
+        scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
-
-        // ToDo: TEMP -- remove this later, but until this is running ...
-        scheduler.awaitTermination(3000, TimeUnit.SECONDS);
     }
 
     public static void buildClientGraph(GraphManager gm, HazelcastConfigurator configurator, ResponseCallBack callBack) {
@@ -83,12 +82,20 @@ public class HazelcastClient {
         }
         new RequestDecodeStage(gm, configurator.connectionToDecoderPipes, callBack);
 
-        MonitorConsoleStage.attach(gm);
+//        MonitorConsoleStage.attach(gm);
+    }
+
+    public void stopScheduler() {
+        scheduler.awaitTermination(3, TimeUnit.SECONDS);
     }
 
     public int newSet(int correlationId, CharSequence name) {
         assert (name.length() + 8 < configurator.getMaxMidAmble()) :
             "The maximum Set name length is 64. The requested Set name is " + name.length() + " characters in length.";
+
+        // ToDo: In actual fact, we should get a response from this before doing the Partitions (next line)
+        Client.createProxy(1, "cas_work", "\"hz:impl:setService");
+        Client.getPartitions(2);
 
         // Create a new token for this name
         ByteBuffer bb = Charset.forName("UTF-8").encode(CharBuffer.wrap(name));
@@ -163,6 +170,7 @@ public class HazelcastClient {
             if (PipeWriter.tryWriteFragment(requestPipe, 0xc)) {
                 PipeWriter.writeInt(requestPipe, 0x1, correlationId);
                 PipeWriter.writeInt(requestPipe, 0x2, -1);
+                PipeWriter.publishWrites(requestPipe);
                 return true;
             } else {
                 return false;
@@ -174,6 +182,7 @@ public class HazelcastClient {
             PipeWriter.writeInt(requestPipe, 0x2, -1);
             PipeWriter.writeUTF8(requestPipe, 0x1400003, name);
             PipeWriter.writeUTF8(requestPipe, 0x1400005, serviceName);
+            PipeWriter.publishWrites(requestPipe);
             return true;
         }
     }

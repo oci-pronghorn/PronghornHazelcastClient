@@ -22,11 +22,11 @@ public class ConnectionStage extends PronghornStage {
     private final static Logger log = LoggerFactory.getLogger(ConnectionStage.class);
 
     private final Pipe<RawDataSchema> inputMessagesToSend;
-    
+
     private final Pipe<RequestResponseSchema>[] outputMessagesReceived;
     private final long[]                outputActiveCorrelationId;
     private static final int END_FLAG = 64;
-    
+
     private final HazelcastConfigurator conf;
 
     private final long timeLimitMS = 1000;//TODO: where to set this ping?
@@ -46,33 +46,33 @@ public class ConnectionStage extends PronghornStage {
     private ByteBuffer[] pendingWriteBuffers;
 
     private StringBuilder authResponse = new StringBuilder(128);
-    
-    //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStage 
+
+    //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStage
     private PipeConfig<RawDataSchema> inputSocketPipeConfig;
     private Pipe<RawDataSchema> inputSocketPipe;
     private ByteBuffer inputSocketBuffer; //wraps the above pipe.
     private LittleEndianDataInputBlobReader<RawDataSchema> reader;
-    
+
     @SuppressWarnings("unchecked")
     protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RequestResponseSchema> output, HazelcastConfigurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = new Pipe[]{output};
-        
+
         this.outputActiveCorrelationId = new long[1];
         Arrays.fill(outputActiveCorrelationId, Long.MIN_VALUE);
-        
+
         this.conf = conf;
     }
-    
+
     protected ConnectionStage(GraphManager graphManager, Pipe<RawDataSchema> input, Pipe<RequestResponseSchema>[] outputs, HazelcastConfigurator conf) {
         super(graphManager, input, outputs);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = outputs;
-        
+
         this.outputActiveCorrelationId = new long[outputs.length];
         Arrays.fill(outputActiveCorrelationId, Long.MIN_VALUE);
-        
+
         this.conf = conf;
     }
 
@@ -92,7 +92,7 @@ public class ConnectionStage extends PronghornStage {
         int idx = 0;
         int lenIdx;
         int tLen;
-        
+
         if (conf.isCustomAuth()) {
             byte[] customCred = conf.getCustomCredentials();
             tLen = customCred.length;
@@ -143,9 +143,11 @@ public class ConnectionStage extends PronghornStage {
         lengthData = ByteBuffer.allocate(4);
 
         allocateIncommingBuffer();
+
+        System.err.println("Connection Stage startup finish");
     }
 
-    
+
     private void allocateIncommingBuffer() {
         int size = Integer.MAX_VALUE;
         int j = outputMessagesReceived.length;
@@ -155,14 +157,14 @@ public class ConnectionStage extends PronghornStage {
         while (--j>=0) {
             size = Math.min(size, outputMessagesReceived[j].sizeOfBlobRing);
         }
-        
+
         inputSocketPipeConfig = new PipeConfig<RawDataSchema>(RawDataSchema.instance, 20, size);
         inputSocketPipe = new Pipe<RawDataSchema>(inputSocketPipeConfig);
-        inputSocketPipe.initBuffers();        
+        inputSocketPipe.initBuffers();
         inputSocketBuffer = Pipe.wrappedBlobForWriting(0, inputSocketPipe);
-        reader = new LittleEndianDataInputBlobReader<RawDataSchema>(inputSocketPipe);        
+        reader = new LittleEndianDataInputBlobReader<RawDataSchema>(inputSocketPipe);
         LittleEndianDataInputBlobReader.openRawRead(reader, 0, Integer.MAX_VALUE);//unknown length
-        
+
     }
 
     private int buildConInit(byte[] initBytes, int idx) {
@@ -220,8 +222,6 @@ public class ConnectionStage extends PronghornStage {
 
     @Override
     public void run() {
-        //System.err.println(exitReason);
-
         long now = System.currentTimeMillis();
 
         //connect if not connected
@@ -303,19 +303,19 @@ public class ConnectionStage extends PronghornStage {
                 isReenter = false;
 
                 //we assume that the data always starts at zero and we are writing at position
-                
+
                 if (inputSocketBuffer.position()>=18 && isFrameFullyFilled(inputSocketBuffer)) {
-                                
-                
+
+
                     int pipeIdx = selectOutputPipe();
                     if (pipeIdx < 0) {
                         return;//do nothing, can not find pipe
                     }
                     Pipe<RequestResponseSchema> selectedPipe = outputMessagesReceived[pipeIdx];
-                    
+
                     //first check if its bigger than the smallest frame size then check that we have the full frame
                     if (Pipe.hasRoomForWrite(selectedPipe)) {
-    
+
                         int frameSize     = reader.readInt();
                         int version       = reader.readByte();
                         assert(version < 2): "No support for other versions";
@@ -324,64 +324,64 @@ public class ConnectionStage extends PronghornStage {
                         int correlationId = reader.readInt();
                         int partitionId   = reader.readInt();
                         int offset        = reader.readShort();
-                        
+
                         reader.skip(offset-18);
-                        int remainingBytes = frameSize-offset;                   
-    
+                        int remainingBytes = frameSize-offset;
+
                         switch (type) {
-    
+
                             case 0x6d: //auth response
                                 assert(!isAuthenticated);
-    
+
                                 authResponse.setLength(0);
-    
+
                                 //address
                                 LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
-    
+
                                 int someNumber = reader.readInt();
-                                
+
                                 // text UUID
                                 LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
-                                
+
                                 // text UUID owner
                                 LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
-    
+
                                 System.err.println("AUTH:"+ authResponse+" "+someNumber);
                                 isAuthenticated = true;
-    
+
                             break;
-    
+
                             // TODO: Add support for Ping response here
-    
+
                             default:
                                  assert(isAuthenticated);
-                                 
+
                                  //TODO: write to free pipe, if none found then fail need more pipes.
-                                 
+
                                  int responseSize = Pipe.addMsgIdx(selectedPipe, RequestResponseSchema.MSG_RESPONSE_1);
-                                 
+
                                  //send type in the upper 16 and the flags in the lower
                                  Pipe.addIntValue((type<<16) | flags, selectedPipe);
                                  Pipe.addIntValue(correlationId, selectedPipe);
                                  Pipe.addIntValue(partitionId, selectedPipe);
-                                                                  
+
                                  reader.readInto(selectedPipe, remainingBytes);
-                                                              
+
                                  Pipe.confirmLowLevelWrite(selectedPipe, responseSize);
                                  Pipe.publishWrites(selectedPipe);
-                                 
+
                                  if (0 != (flags & END_FLAG)) {
                                      outputActiveCorrelationId[pipeIdx] = Long.MIN_VALUE;
                                  } else {
                                      //this is only a fragment so block this pipe until we get the end.
                                      outputActiveCorrelationId[pipeIdx] = correlationId;
                                  }
-                                 
+
                         }
-    
+
                     }
                 }
-                
+
             }
 
         } catch (IOException e) {
@@ -391,7 +391,7 @@ public class ConnectionStage extends PronghornStage {
 
     private int selectOutputPipe() {
         final int correlationPeek = LittleEndianDataInputBlobReader.peekInt(reader, 8);
-        
+
         int selectedPipe = -1;
         //find a free pipe
         int j = outputActiveCorrelationId.length;
@@ -399,7 +399,7 @@ public class ConnectionStage extends PronghornStage {
             //only selected if one has not been selected
             if (selectedPipe<0 && Long.MIN_VALUE == outputActiveCorrelationId[j] && Pipe.hasRoomForWrite(outputMessagesReceived[j])) {
                 selectedPipe = j;
-            }                    
+            }
             if (correlationPeek == outputActiveCorrelationId[j]) {
                 return j;
             }

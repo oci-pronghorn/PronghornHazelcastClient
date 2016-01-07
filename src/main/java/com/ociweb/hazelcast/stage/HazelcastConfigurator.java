@@ -28,7 +28,7 @@ public class HazelcastConfigurator {
     }
 
     public InetSocketAddress buildInetSocketAddress(int stageId) {
-       return new InetSocketAddressImmutable("127.0.0.1",80);
+       return new InetSocketAddressImmutable("127.0.0.1", 5701);
     }
 
     public CharSequence getUUID(int stageId) {
