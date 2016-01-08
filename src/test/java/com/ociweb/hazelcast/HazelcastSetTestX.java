@@ -1,15 +1,41 @@
 package com.ociweb.hazelcast;
 
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.client.config.ClientNetworkConfig;
+import com.hazelcast.config.Config;
+import com.hazelcast.config.GroupConfig;
+import com.hazelcast.config.NetworkConfig;
+import com.hazelcast.core.Hazelcast;
+import com.hazelcast.core.HazelcastInstance;
 import com.ociweb.hazelcast.stage.HazelcastClient;
 import com.ociweb.hazelcast.stage.ResponseCallBack;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
+
 public class HazelcastSetTestX {
 
+    private static HazelcastInstance hazelcastInstance;
     private HazelcastClientConfig config;
     private HazelcastClient client;
+
+    @BeforeClass
+    public static void startServer() {
+        Config config = new Config();
+        config.setGroupConfig(new GroupConfig("dev","dev-pass"));
+        NetworkConfig nwConfig = config.getNetworkConfig();
+        nwConfig.setPort(5701);
+        config.setNetworkConfig(nwConfig);
+        final int port = config.getNetworkConfig().getPort();
+        System.err.println("port:" + port);
+       // config.setSecurityConfig(securityConfig);
+        hazelcastInstance = Hazelcast.newHazelcastInstance(config);
+    }
 
     @Test
     public void createSet() {
@@ -18,10 +44,17 @@ public class HazelcastSetTestX {
         int setSize = -1;
         int cid = 1;
 
-        int fstoken = client.newSet(cid, "FirstSet");
+        try {
+            Thread.sleep(500L);
+        } catch (InterruptedException ie) {
+            // no big deal
+        }
+
+        int fstoken = client.newSet(client, cid, "FirstSet");
+        assertNotEquals(fstoken, -1);
 
         // Add a string, Must be serializable or identifiable serializable or portable..
-        HazelcastSet.add(client, cid, fstoken, "MyStringValue");
+        assertTrue(HazelcastSet.add(client, cid, fstoken, "MyStringValue"));
 
         // Add a low level object, can be used for very tight serialization
 /*
@@ -31,7 +64,7 @@ public class HazelcastSetTestX {
 */
 
         //request the size and the callback will get the response
-        HazelcastSet.size(client, cid, fstoken);
+        assertTrue(HazelcastSet.size(client, cid, fstoken));
 
         client.stopScheduler();
     }
@@ -43,6 +76,16 @@ public class HazelcastSetTestX {
             // assert((short)0x000C = flags) : "flags are not start and end, actual values: " + flags);
             System.err.println("SetTestX: callback");
         }
+
+        @Override
+        public void testSend(String message) {
+            System.err.println("SetTestX: callback received test message of: " + message);
+        }
+    }
+
+    @AfterClass
+    public static void stopServer() {
+        hazelcastInstance.shutdown();
     }
 
 }

@@ -6,4 +6,6 @@ public interface ResponseCallBack {
 
     void send(int correlationId, short type, short flags, int partitionId, HZDataInput reader);
 
+    // TEMP
+    void testSend(String testMessage);
 }

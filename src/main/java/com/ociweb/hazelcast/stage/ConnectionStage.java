@@ -144,7 +144,6 @@ public class ConnectionStage extends PronghornStage {
 
         allocateIncommingBuffer();
 
-        System.err.println("Connection Stage startup finish");
     }
 
 
@@ -451,11 +450,10 @@ public class ConnectionStage extends PronghornStage {
 
             initializerData.flip();
             pendingWriteBuffers[0] = initializerData;
-            System.err.println("XXXXXXXXXXX sending init data of "+initializerData.remaining());
+            log.debug("Sending initialization data of " + initializerData.remaining());
             return nonBlockingByteBufferWrite(now);
 
         } catch (Throwable t) {
-
             //this is not unreasonable if we are waiting for the broker to be started.
             log.debug("Unable to connect", t);
             buildNewChannel(); //rebuild-connection to start fresh.

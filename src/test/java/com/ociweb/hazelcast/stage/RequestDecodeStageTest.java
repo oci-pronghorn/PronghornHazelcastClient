@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.hazelcast.client.impl.protocol.util.Int2ObjectHashMap;
+//import com.hazelcast.client.impl.protocol.util.Int2ObjectHashMap;
 import com.hazelcast.nio.ClassLoaderUtil;
 import com.hazelcast.nio.serialization.DataSerializable;
 import com.hazelcast.nio.serialization.DataSerializableFactory;
@@ -59,6 +59,11 @@ public class RequestDecodeStageTest {
           } catch (IOException e) {
              throw new RuntimeException(e);
           }   
+        }
+
+        @Override
+        public void testSend(String testMessage) {
+            System.err.println("TestCollector.testSend received: " + testMessage);
         }
     }
     

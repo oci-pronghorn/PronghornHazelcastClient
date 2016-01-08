@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import com.ociweb.hazelcast.stage.util.InetSocketAddressImmutable;
 import com.ociweb.pronghorn.pipe.Pipe;
 import com.ociweb.pronghorn.pipe.RawDataSchema;
+import com.ociweb.pronghorn.stage.test.ConsoleJSONDumpStage;
 
 /**
  * The HazelcastConfigurator carries all the configuration information used by the various
@@ -22,6 +23,7 @@ public class HazelcastConfigurator {
     protected Pipe[] encoderToConnectionPipes = new Pipe[numberOfConnectionStages];
     protected Pipe[] connectionToDecoderPipes = new Pipe[numberOfConnectionStages];
     protected ConnectionStage[] connectionStage = new ConnectionStage[numberOfConnectionStages];
+//    protected ConsoleJSONDumpStage<RawDataSchema>[] connectionStage = new ConsoleJSONDumpStage[numberOfConnectionStages];
 
     protected int getNumberOfConnectionStages() {
         return numberOfConnectionStages;

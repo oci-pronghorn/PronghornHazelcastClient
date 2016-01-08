@@ -106,16 +106,21 @@ public class RequestEncodeStage extends PronghornStage {
                 // TOBERESOLVED: Implemented commands are not doing this, but I don't think this code
                 // matches the comments... Rather than all, seems to ensure there is at least one
                 final int original = outputsRoundCursor;
-                do {
-                    if (--outputsRoundCursor < 0) {
-                        outputsRoundCursor = outputs.length - 1;
-                    }
-                } while (outputsRoundCursor != original &&
-                    !Pipe.hasRoomForWrite(outputs[outputsRoundCursor]));
+                if (outputs.length > 1) {
+                    do {
+                        if (--outputsRoundCursor < 0) {
+                            outputsRoundCursor = outputs.length - 1;
+                        }
+                    } while (outputsRoundCursor != original && !Pipe.hasRoomForWrite(outputs[outputsRoundCursor]));
 
-                if (outputsRoundCursor == original) {
-                    // no room was found
-                    return;
+                    if (outputsRoundCursor == original) {
+                        // no room was found
+                        return;
+                    }
+                } else {
+                    if (!Pipe.hasRoomForWrite(outputs[outputsRoundCursor])) {
+                        return;
+                    }
                 }
                 targetOutput = outputs[outputsRoundCursor];
             } else {
