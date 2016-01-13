@@ -80,7 +80,7 @@ public class HazelcastClient {
         // The connection stage handles the sends and receives of the Hazelcast server communications
         for (int pipeNumber = 0; pipeNumber < configurator.getNumberOfConnectionStages(); pipeNumber++) {
             configurator.connectionStage[pipeNumber] = new ConnectionStage(gm, configurator.encoderToConnectionPipes[pipeNumber], configurator.connectionToDecoderPipes[pipeNumber], configurator);
-//            configurator.connectionStage[pipeNumber] = new ConsoleJSONDumpStage<>(gm, configurator.encoderToConnectionPipes[pipeNumber], System.err);
+//            configurator.connectionStage[pipeNumber] = new ConsoleJSONDumpStage<RawDataSchema>(gm, configurator.encoderToConnectionPipes[pipeNumber], System.out);
         }
 
         // The Decoder receives the responses from the server and sends them on to the callback provided by the client
@@ -99,16 +99,18 @@ public class HazelcastClient {
             "The maximum Set name length is 64. The requested Set name is " + name.length() + " characters in length.";
 
         // ToDo: In actual fact, we should get a response from this before doing the Partitions (next line)
-        if (!Client.createProxy(client, 1, "cas_work", "\"hz:impl:setService")) {
+        if (!Client.createProxy(client, 1, "cas_work", "hz:impl:setService")) {
             log.error("Died during createProxy");
             return -1;
         }
         log.debug("Built Proxy");
+/*
         if (!Client.getPartitions(client, 2)) {
             log.error("Died when getting partitions");
             return -1;
         }
         log.debug("Asked for partitions");
+*/
 
         // Create a new token for this name
         ByteBuffer bb = Charset.forName("UTF-8").encode(CharBuffer.wrap(name));

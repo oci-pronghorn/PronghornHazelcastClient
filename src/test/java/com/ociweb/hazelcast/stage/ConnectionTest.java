@@ -54,6 +54,7 @@ public class ConnectionTest {
         Pipe<RequestResponseSchema> output = new Pipe<>(outputConfig);
         output.initBuffers(); //Must be done manually because we are not using a scheduler for this test
 
+/*
         HazelcastConfigurator conf = new HazelcastConfigurator() {
 
             public InetSocketAddress buildInetSocketAddress(int stageId) {
@@ -82,14 +83,15 @@ public class ConnectionTest {
 
             }
         };
-
-        ConnectionStage cs = new ConnectionStage(gm, input, output, conf  );
+*/
+        HazelcastConfigurator conf = new HazelcastConfigurator();
+        ConnectionStage cs = new ConnectionStage(gm, input, output, conf);
 
         //started up with login credentials
         cs.startup(); //you can change passwords but this will require a new graph instance.
 
         int seconds = 10;
-        long testEnd = System.currentTimeMillis()+(1000*seconds);
+        long testEnd = System.currentTimeMillis() + (1000 * seconds);
         while (System.currentTimeMillis()<testEnd) {
             cs.run();
         }

@@ -255,7 +255,7 @@ public class RequestEncodeStage extends PronghornStage {
     }
 
     private int encodeCreateProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        // outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
         return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 

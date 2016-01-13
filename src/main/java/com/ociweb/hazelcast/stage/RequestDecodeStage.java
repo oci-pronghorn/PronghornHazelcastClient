@@ -43,21 +43,13 @@ public class RequestDecodeStage extends PronghornStage {
                     e.printStackTrace();
                 }
             }
-
-            @Override
-            public void testSend(String testMessage) {
-                System.err.println("Request Decode: I got into the wrong callback somehow");
-            }
         };
-
     }
 
     public RequestDecodeStage(GraphManager gm, Pipe<RequestResponseSchema>[] inputFromConnection, ResponseCallBack callBack) {
         super(gm, inputFromConnection, NONE);
         this.inputFromConnection = inputFromConnection;
         this.callBack = callBack;
-        System.err.println("Set Callback");
-        callBack.testSend("This is a test from the decoder ctor");
     }
 
     @SuppressWarnings("unchecked")

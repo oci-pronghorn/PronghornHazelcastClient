@@ -257,7 +257,6 @@ public class ConnectionStage extends PronghornStage {
                 }
 
                 //low level read.
-
                 while (Pipe.hasContentToRead(inputMessagesToSend)) {
                     //is there stuff to send, send it.
 
@@ -265,16 +264,19 @@ public class ConnectionStage extends PronghornStage {
                     int meta = Pipe.takeRingByteMetaData(inputMessagesToSend); //for string and byte array
                     int len = Pipe.takeRingByteLen(inputMessagesToSend);
 
+                    System.err.println("len is: " + len);
+
+                    int vli = len + 4;
                     lengthData.clear(); //TODO: once we measure performance if this stage is holding things up we can move this back to the encoder stage.
-                    lengthData.put((byte)(0xFF&len));
-                    lengthData.put((byte)(0xFF&(len>>8)));
-                    lengthData.put((byte)(0xFF&(len>>16)));
-                    lengthData.put((byte)(0xFF&(len>>24)));
+                    lengthData.put((byte)(0xFF & vli));
+                    lengthData.put((byte)(0xFF & (vli >> 8)));
+                    lengthData.put((byte)(0xFF & (vli >> 16)));
+                    lengthData.put((byte)(0xFF & (vli >> 24)));
                     lengthData.flip();
 
                     pendingWriteBuffers[0] = lengthData;
                     pendingWriteBuffers[1] = Pipe.wrappedBlobReadingRingA(inputMessagesToSend, meta, len);
-                    pendingWriteBuffers[2] = Pipe.wrappedBlobReadingRingB(inputMessagesToSend,meta,len);
+                    pendingWriteBuffers[2] = Pipe.wrappedBlobReadingRingB(inputMessagesToSend, meta, len);
 
                     if (!nonBlockingByteBufferWrite(now)) {
                         exitReason = 4;
@@ -286,7 +288,6 @@ public class ConnectionStage extends PronghornStage {
 
             readDataFromConnection();
 
-
             exitReason = 5;
         } else {
             exitReason = 6;
@@ -297,7 +298,7 @@ public class ConnectionStage extends PronghornStage {
         try {
             boolean isReenter = inputSocketBuffer.position()>0;
 
-            while ( channel.read(inputSocketBuffer) > 0 || isReenter) {
+            while (channel.read(inputSocketBuffer) > 0 || isReenter) {
 
                 isReenter = false;
 
@@ -314,7 +315,6 @@ public class ConnectionStage extends PronghornStage {
 
                     //first check if its bigger than the smallest frame size then check that we have the full frame
                     if (Pipe.hasRoomForWrite(selectedPipe)) {
-
                         int frameSize     = reader.readInt();
                         int version       = reader.readByte();
                         assert(version < 2): "No support for other versions";
@@ -345,7 +345,7 @@ public class ConnectionStage extends PronghornStage {
                                 // text UUID owner
                                 LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
 
-                                System.err.println("AUTH:"+ authResponse+" "+someNumber);
+                                System.err.println("AUTH: "+ authResponse + " " + someNumber);
                                 isAuthenticated = true;
 
                             break;
@@ -481,12 +481,10 @@ public class ConnectionStage extends PronghornStage {
 
     private boolean nonBlockingByteBufferWrite(long now) {
 
-        int i = 0;
-        int limit = pendingWriteBuffers.length;
-        while (i<limit) {
+        for (int i = 0; i < pendingWriteBuffers.length; i++) {
             if (null != pendingWriteBuffers[i]) {
-                try{
-                    if (channel.write(pendingWriteBuffers[i])>0) {
+                try {
+                    if (channel.write(pendingWriteBuffers[i]) > 0) {
                         touched = now;
                     }
                     if (0 == pendingWriteBuffers[i].remaining()) {
@@ -499,13 +497,10 @@ public class ConnectionStage extends PronghornStage {
                     if (!(e instanceof NotYetConnectedException) && !(e instanceof IOException)) {
                         e.printStackTrace();
                         //TODO: what to do on failure.
-
                     }
                     return false;
                 }
-
             }
-            i++;
         }
         return true;
     }
