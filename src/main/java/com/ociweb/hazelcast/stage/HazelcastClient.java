@@ -83,15 +83,12 @@ public class HazelcastClient {
 //            configurator.connectionStage[pipeNumber] = new ConsoleJSONDumpStage<RawDataSchema>(gm, configurator.encoderToConnectionPipes[pipeNumber], System.out);
         }
 
+//        new ConsoleJSONDumpStage<RawDataSchema>(gm, configurator.connectionToDecoderPipes[0], System.err);
         // The Decoder receives the responses from the server and sends them on to the callback provided by the client
         new RequestDecodeStage(gm, configurator.connectionToDecoderPipes, callBack);
 
         MonitorConsoleStage.attach(gm);
         log.debug("Built graph");
-    }
-
-    public void stopScheduler() {
-//        scheduler.awaitTermination(3, TimeUnit.SECONDS);
     }
 
     public int newSet(HazelcastClient client, int correlationId, CharSequence name) {
@@ -104,13 +101,12 @@ public class HazelcastClient {
             return -1;
         }
         log.debug("Built Proxy");
-/*
+
         if (!Client.getPartitions(client, 2)) {
             log.error("Died when getting partitions");
             return -1;
         }
         log.debug("Asked for partitions");
-*/
 
         // Create a new token for this name
         ByteBuffer bb = Charset.forName("UTF-8").encode(CharBuffer.wrap(name));
@@ -166,7 +162,7 @@ public class HazelcastClient {
 
     private static class Client {
         public static boolean createProxy(HazelcastClient client, int correlationId, CharSequence name, CharSequence serviceName) {
-            if (client.getRequestsProxy().tryWriteFragment(0x0)) {
+            if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_CREATEPROXY_5)) {
                 return writeProxyInfo(client, correlationId, name, serviceName);
             } else {
                 return false;
@@ -174,7 +170,7 @@ public class HazelcastClient {
         }
 
         public static boolean destroyProxy(HazelcastClient client, int correlationId, CharSequence name, CharSequence serviceName) {
-            if (client.getRequestsProxy().tryWriteFragment(0x6)) {
+            if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_DESTROYPROXY_6)) {
                 return writeProxyInfo(client, correlationId, name, serviceName);
             } else {
                 return false;
@@ -183,9 +179,9 @@ public class HazelcastClient {
 
 
         public static boolean getPartitions(HazelcastClient client, int correlationId) {
-            if (client.getRequestsProxy().tryWriteFragment(0xc)) {
-                client.getRequestsProxy().writeInt(0x1, correlationId);
-                client.getRequestsProxy().writeInt(0x2, -1);
+            if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_GETPARTITIONS_8)) {
+                client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_GETPARTITIONS_8_FIELD_CORRELATIONID_2097136, correlationId);
+                client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_GETPARTITIONS_8_FIELD_PARTITIONHASH_2097135, -1);
                 client.getRequestsProxy().publishWrites();
                 return true;
             } else {

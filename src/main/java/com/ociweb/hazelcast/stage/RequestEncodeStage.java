@@ -248,14 +248,20 @@ public class RequestEncodeStage extends PronghornStage {
         }
     }
 
-
+    /*
+        The following constructs are a bit confusing.  Why two sendBlobContents in a row?  There is one
+        sendBlobContent for each piece of information being sent in the message.  For example, the size
+        has only one piece of information, the name.  However CreateProxy has both name and serviceName,
+        so there are two. To say it another way, there should be one sendBlobContent for every field in
+        the message after the partitionHash.
+     */
     private int encodeDestroyProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
         outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
         return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 
     private int encodeCreateProxy(int outputBytePos, byte[] outputByteBuffer, int outputByteMask) {
-        // outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
+        outputBytePos = sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
         return sendBlobContent(outputBytePos, outputByteBuffer, outputByteMask);
     }
 

@@ -32,7 +32,6 @@ public class EncoderTestGenerator extends PronghornStage {
 
     @Override
     public void run() {
-        System.out.println("generator: iteration " + iter++);
         writer.run();
         iterations--;
         if (iterations == 0) {

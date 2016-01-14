@@ -12,11 +12,10 @@ import java.nio.ByteBuffer;
 public class HazelcastSet {
 
     public static boolean size(HazelcastClient client, int correlationId, int token) {
-        if (client.getRequestsProxy().tryWriteFragment(0x10)) {
-            client.getRequestsProxy().writeInt(0x1, correlationId);
-            client.getRequestsProxy().writeInt(0x2, -1);
-            client.getRequestsProxy().writeInt(0x3, token);
-            client.getRequestsProxy().writeUTF8(0x1400004, client.getName(token));
+        if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_SIZE_1537)) {
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_CORRELATIONID_2097136, correlationId);
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_PARTITIONHASH_2097135, -1);
+            client.getRequestsProxy().writeUTF8(HazelcastRequestsSchema.MSG_SIZE_1537_FIELD_NAME_458497, client.getName(token));
             client.getRequestsProxy().publishWrites();
             return true;
         } else {
@@ -26,12 +25,11 @@ public class HazelcastSet {
 
 
     public static boolean contains(HazelcastClient client, int correlationId, int token, CharSequence name, ByteBuffer value) {
-        if (client.getRequestsProxy().tryWriteFragment(0x15)) {
-            client.getRequestsProxy().writeInt(0x1, correlationId);
-            client.getRequestsProxy().writeInt(0x2, -1);
-            client.getRequestsProxy().writeInt(0x3, token);
-            client.getRequestsProxy().writeUTF8(0x1400004, client.getName(token));
-            client.getRequestsProxy().writeBytes(0x1c00006, value);
+        if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_CONTAINS_1538)) {
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_CORRELATIONID_2097136, correlationId);
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_PARTITIONHASH_2097135, -1);
+            client.getRequestsProxy().writeUTF8(HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_NAME_458497, client.getName(token));
+            client.getRequestsProxy().writeBytes(HazelcastRequestsSchema.MSG_CONTAINS_1538_FIELD_VALUE_458498, value);
             return true;
         } else {
             return false;
@@ -40,12 +38,11 @@ public class HazelcastSet {
 
 
     public static boolean containsAll(HazelcastClient client, int correlationId, int token, ByteBuffer valueSet) {
-        if (client.getRequestsProxy().tryWriteFragment(0x1b)) {
-            client.getRequestsProxy().writeInt(0x1, correlationId);
-            client.getRequestsProxy().writeInt(0x2, -1);
-            client.getRequestsProxy().writeInt(0x3, token);
-            client.getRequestsProxy().writeUTF8(0x1400004, client.getName(token));
-            client.getRequestsProxy().writeBytes(0x1c00006, valueSet);
+        if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_CONTAINSALL_1539)) {
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_CORRELATIONID_2097136, correlationId);
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_PARTITIONHASH_2097135, -1);
+            client.getRequestsProxy().writeUTF8(HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_NAME_458497, client.getName(token));
+            client.getRequestsProxy().writeBytes(HazelcastRequestsSchema.MSG_CONTAINSALL_1539_FIELD_VALUESET_458499, valueSet);
             return true;
         } else {
             return false;
@@ -54,18 +51,15 @@ public class HazelcastSet {
 
 
     public static boolean add(HazelcastClient client, int correlationId, int token, Serializable value)  {
-        if (client.getRequestsProxy().tryWriteFragment(0x21)) {
-            client.getRequestsProxy().writeInt(0x1, correlationId);
-            client.getRequestsProxy().writeInt(0x2, -1);
-            // FUTURE: The following two lines should be used when tokens go into play
-//            PipeWriter.writeInt(pipe, 0x3, token);
-//            PipeWriter.writeUTF8(pipe, 0x1400004, client.getName(token));
-            client.getRequestsProxy().writeUTF8(0x1400004, client.getName(token));
+        if (client.getRequestsProxy().tryWriteFragment(HazelcastRequestsSchema.MSG_ADD_1540)) {
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_ADD_1540_FIELD_CORRELATIONID_2097136, correlationId);
+            client.getRequestsProxy().writeInt(HazelcastRequestsSchema.MSG_ADD_1540_FIELD_PARTITIONHASH_2097135, -1);
+            client.getRequestsProxy().writeUTF8(HazelcastRequestsSchema.MSG_ADD_1540_FIELD_NAME_458497, client.getName(token));
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             try (ObjectOutputStream oos = new ObjectOutputStream(bos)) {
                 oos.writeObject(value);
                 byte[] valueBytes = bos.toByteArray();
-                client.getRequestsProxy().writeBytes(0x1c00006, valueBytes, 0, valueBytes.length);
+                client.getRequestsProxy().writeBytes(HazelcastRequestsSchema.MSG_ADD_1540_FIELD_VALUE_458498, valueBytes, 0, valueBytes.length);
                 client.getRequestsProxy().publishWrites();
                 return true;
             } catch (IOException e) {
@@ -78,7 +72,7 @@ public class HazelcastSet {
         }
     }
 
-    // TODO:  Implement
+    // TODO:  Implement an add for each of the serializable types
     public static boolean add(HazelcastClient client, int correlationId, int token, Externalizable value)  {
         return false;
     }

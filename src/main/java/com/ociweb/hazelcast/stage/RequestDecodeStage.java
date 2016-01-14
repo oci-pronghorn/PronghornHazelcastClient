@@ -77,14 +77,20 @@ public class RequestDecodeStage extends PronghornStage {
 
     private int readFromPipe(Pipe<RequestResponseSchema> pipe, HZDataInput reader) {
         int c = 0;
-        while (Pipe.hasContentToRead(pipe)) { //keep going while this pipe has data
 
+        while (Pipe.hasContentToRead(pipe)) { //keep going while this pipe has data
             int msgIdx = Pipe.takeMsgIdx(pipe);
             assert (RequestResponseSchema.MSG_RESPONSE_1 == msgIdx) : "Only one message template is supported";
 
             int typeFlags = Pipe.takeValue(pipe);
             int correlationId = Pipe.takeValue(pipe);
             int partitionId = Pipe.takeValue(pipe);
+/*
+            System.out.printf("Decoder: msgIdx: 0x%X\n", msgIdx);
+            System.out.printf("Decoder: typeFlags: 0x%X\n", typeFlags);
+            System.out.printf("Decoder: correlationId: 0x%X\n", correlationId);
+            System.out.printf("Decoder: partitionId: 0x%X\n", partitionId);
+*/
 
             if (0 != (BEGIN_FLAG & typeFlags)) {
                 reader.openLowLevelAPIField();
@@ -95,7 +101,9 @@ public class RequestDecodeStage extends PronghornStage {
             Pipe.confirmLowLevelRead(pipe, msgSize);
             Pipe.readNextWithoutReleasingReadLock(pipe);
 
+            System.out.println("Decoder is checking end flag callback has content to read from pipe.");
             if (0 != (END_FLAG & typeFlags)) {
+                System.out.println("Decoder is calling callback has content to read from pipe.");
                 callBack.send(correlationId, (short) (typeFlags >> 16), (short) ((BEGIN_FLAG | END_FLAG) | (0x3F & typeFlags)), partitionId, reader);
                 Pipe.releaseAllPendingReadLock(pipe);
 
