@@ -17,6 +17,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class HazelcastSetTestX {
 
@@ -51,8 +52,11 @@ public class HazelcastSetTestX {
         }
 
 
-        int fstoken = client.newSet(client, cid, "FirstSet");
-
+        final int fstoken = client.newSet(client, cid, "FirstSet");
+        if (-1 == fstoken) {
+            fail("Unable to get token, see log");
+        }
+        
         int ThatsEnoughForNow = 3;
         int numberOfTimes = 0;
         // ToDo: remove the always true of GoOn after the call back starts getting hit.
@@ -66,7 +70,6 @@ public class HazelcastSetTestX {
             if (numberOfTimes == ThatsEnoughForNow) break;
         }
         goOn = false;
-        assertNotEquals(fstoken, -1);
 
         // Add a string, Must be serializable or identifiable serializable or portable..
 //        assertTrue(HazelcastSet.add(client, cid, fstoken, "MyStringValue"));

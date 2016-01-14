@@ -130,8 +130,8 @@ public class HazelcastClient {
         // Put the position in the array in the top 16
         newToken <<= 16;
         // Put the length in the lower 16
-        int returnToken = newToken + tokenLength;
-        names.put(new Integer(returnToken), name);
+        int returnToken = newToken + tokenLength; //TODO: This highly dangerous and only works if you know tokenLength will never be negative and will always be less than 32K
+        names.put(new Integer(returnToken), name); ///TODO: This is not the right data structure, revisit.
         log.debug("Finished new Set creation for " + name);
         return returnToken;
     }
