@@ -149,6 +149,7 @@ public class RequestEncodeStage extends PronghornStage {
             byte[] outputByteBuffer = Pipe.byteBuffer(targetOutput);
             int outputByteMask = Pipe.blobMask(targetOutput);
 
+  //          outputBytePos+=4;
             outputBytePos = encodeCorrelationIdAndPartitionHash(msgIdx, targetOutput, outputBytePos, outputByteBuffer, outputByteMask);
 
             System.err.println("msgIdx: " + msgIdx + ", inputMsgId: 0X" + Long.toHexString(inputMsgId));
