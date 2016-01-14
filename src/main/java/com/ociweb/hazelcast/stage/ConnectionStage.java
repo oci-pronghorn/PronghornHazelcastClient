@@ -71,6 +71,7 @@ public class ConnectionStage extends PronghornStage {
         Arrays.fill(outputActiveCorrelationId, Long.MIN_VALUE);
 
         this.conf = conf;
+        GraphManager.addNota(graphManager,GraphManager.PRODUCER,GraphManager.PRODUCER, this);
     }
 
     protected ConnectionStage(GraphManager graphManager,
@@ -85,6 +86,7 @@ public class ConnectionStage extends PronghornStage {
         Arrays.fill(outputActiveCorrelationId, Long.MIN_VALUE);
 
         this.conf = conf;
+        GraphManager.addNota(graphManager,GraphManager.PRODUCER,GraphManager.PRODUCER, this);
     }
 
     @Override
