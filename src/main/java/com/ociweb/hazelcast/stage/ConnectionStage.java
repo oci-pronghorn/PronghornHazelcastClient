@@ -32,7 +32,7 @@ public class ConnectionStage extends PronghornStage {
     private final long pingTimeSeconds = 200;
     private final long timeLimitMilliSeconds = pingTimeSeconds * 1000;//TODO: where to set this ping?
 
-    private boolean isAuthenticated = false;
+    protected boolean isAuthenticated = false;
     private long touched;
 
     private final static byte BIT_FLAG_START = (byte) 0x80;
@@ -46,7 +46,11 @@ public class ConnectionStage extends PronghornStage {
 
     private ByteBuffer[] pendingWriteBuffers;
 
-    private StringBuilder authResponse = new StringBuilder(128);
+    protected int authPort = -1;
+    protected int authAddrLen = -1;
+    protected int authUUIDLen = -1;
+    protected int authUUIDOwner = -1;
+    protected StringBuilder authResponse = new StringBuilder(128);
 
     //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStage
     private PipeConfig<RawDataSchema> inputSocketPipeConfig;
@@ -303,7 +307,7 @@ public class ConnectionStage extends PronghornStage {
             exitReason = 6;
         }
     }
-
+        
     private void readDataFromConnection() {
         try {
             boolean isReenter = inputSocketBuffer.position() > 0;
@@ -344,19 +348,17 @@ public class ConnectionStage extends PronghornStage {
                                 authResponse.setLength(0);
 
                                 //address
-                                LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
+                                authAddrLen = LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
 
-                                int someNumber = reader.readInt();
+                                authPort = reader.readInt();
 
                                 // text UUID
-                                LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
+                                authUUIDLen = LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
 
                                 // text UUID owner
-                                LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
+                                authUUIDOwner = LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
 
-                                System.err.println("Client Auth: " + authResponse + " " + someNumber);
                                 isAuthenticated = true;
-
                                 break;
 
                             // TODO: Add support for Ping response here

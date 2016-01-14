@@ -79,3 +79,34 @@ public class HazelcastConfigurator {
         return tokenNames[token];
     }
 }
+
+/* TODO: merge this as docs above
+HazelcastConfigurator conf = new HazelcastConfigurator() {
+
+    public InetSocketAddress buildInetSocketAddress(int stageId) {
+        return new InetSocketAddressImmutable("127.0.0.1",port);
+     }
+
+    public CharSequence getUUID(int stageId) {
+        return "ThisIsMe";
+    }
+
+    public CharSequence getOwnerUUID(int stageId) {
+        return "ThisIsNotMe";
+    }
+
+    public CharSequence getUserName(int stageId) {
+        return "dev"; //default value
+    }
+
+    public CharSequence getPassword(int stageId) {
+        return "dev-pass"; //default value
+    }
+
+
+    public boolean isCustomAuth() {
+        return false;
+
+    }
+};
+*/
