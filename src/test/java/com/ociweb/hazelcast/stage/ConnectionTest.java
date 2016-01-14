@@ -1,6 +1,7 @@
 package com.ociweb.hazelcast.stage;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.LockSupport;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -45,8 +46,6 @@ public class ConnectionTest {
     
     @Test
     public void simpleAuthTest() {
-
-
         GraphManager gm = new GraphManager();
 
         PipeConfig<RawDataSchema> inputConfig = new PipeConfig(RawDataSchema.instance);
@@ -56,44 +55,42 @@ public class ConnectionTest {
         Pipe<RequestResponseSchema> output = new Pipe<>(outputConfig);
 
         HazelcastConfigurator conf = new HazelcastConfigurator();
-        ConnectionStage cs = new TestConnectionStageWrapper(gm, input, output, conf);
+        ConnectionStage cs = new TestConnectionStageWrapper(gm, input, output, conf, true);
         GeneratorStage gs = new GeneratorStage(gm, input);
         PipeCleanerStage pc = new PipeCleanerStage(gm, output);
         
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
-          
-        scheduler.awaitTermination(2,TimeUnit.SECONDS);
+      
+        scheduler.awaitTermination(3,TimeUnit.SECONDS);
  
     }
     
+    
     public class TestConnectionStageWrapper extends ConnectionStage {
+        
+        private final boolean shutDownAfterAuth;
         
         protected TestConnectionStageWrapper(GraphManager graphManager,
                 Pipe<RawDataSchema> input,
                 Pipe<RequestResponseSchema> output,
-                HazelcastConfigurator conf) {
+                HazelcastConfigurator conf, boolean shutDownAfterAuth) {
             super(graphManager,input,output,conf);
-            GraphManager.addNota(graphManager,GraphManager.PRODUCER,GraphManager.PRODUCER);
+            this.shutDownAfterAuth = shutDownAfterAuth;
         }
-
-        
-        
         
         @Override
         public void run() {
             super.run();
             
-            if (isAuthenticated) {
+            if (shutDownAfterAuth && isAuthenticated) {
                 Assert.assertTrue(authUUIDLen>10);
-             //   System.out.println("IP & GUID:"+authResponse);
+                System.out.println("IP & GUID:"+authResponse);
                 
                 requestShutdown();
                 
-            }
-            
+            }            
         }
-
 
     }
     
@@ -101,7 +98,7 @@ public class ConnectionTest {
 
         protected GeneratorStage(GraphManager graphManager, Pipe output) {
             super(graphManager, NONE, output);
-            GraphManager.addNota(graphManager,GraphManager.PRODUCER,GraphManager.PRODUCER);
+            GraphManager.addNota(graphManager,GraphManager.PRODUCER,GraphManager.PRODUCER, this);
         }
 
         @Override
