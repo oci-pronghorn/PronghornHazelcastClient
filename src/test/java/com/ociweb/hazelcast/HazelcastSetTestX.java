@@ -14,6 +14,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -56,11 +57,9 @@ public class HazelcastSetTestX {
         if (-1 == fstoken) {
             fail("Unable to get token, see log");
         }
-        
+
         int ThatsEnoughForNow = 3;
         int numberOfTimes = 0;
-        // ToDo: remove the always true of GoOn after the call back starts getting hit.
-        goOn = true;
         while (!goOn) {
             try {
                 Thread.sleep(1000);
@@ -92,11 +91,25 @@ public class HazelcastSetTestX {
     }
 
     private class SetTestCallBack implements ResponseCallBack {
-
         @Override
         public void send(int correlationId, short type, short flags, int partitionId, HZDataInput dataSource) {
             // assert((short)0x000C = flags) : "flags are not start and end, actual values: " + flags);
             System.err.println("SetTestX: callback");
+            System.err.println("correlationId: " + correlationId);
+            System.err.printf("type: 0x%X\n", type);
+            System.err.printf("flags: 0x%X\n", flags);
+            System.err.printf("paritionId: %d(0x%X)\n", partitionId, partitionId);
+            System.err.println("dataSource Length: " + dataSource.length());
+            if (dataSource.length() > 0) {
+                try {
+                    int partition = dataSource.readInt();
+                    String partitionName = dataSource.readUTF();
+                } catch (IOException e) {
+                    System.err.println("SetTestCallBack: IOException");
+                    e.printStackTrace();
+                }
+            }
+
             goOn = true;
         }
     }
