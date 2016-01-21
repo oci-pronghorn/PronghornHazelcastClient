@@ -57,8 +57,6 @@ public class Murmur3Hash {
     public static int hash32(byte[] src, int offset, int length, int mask, int seed) {
         int hashSize = 32;
         int h = seed;
-        int m = 5;
-        int n = 0xe6546b64;
 
         int i = offset;
         int len = length;
