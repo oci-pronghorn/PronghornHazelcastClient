@@ -22,31 +22,70 @@ public class Murmur3HashHazelcastCompareTest {
     }
 
     @Test
-    public void testMurmur3HashMask32againstMurmur3Hash32() {
+    public void testMurmur3Hash32AgainstHazelcastNoSeed() {
         byte[] testBytes = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B};
+        int expected = HashUtil.MurmurHash3_x86_32(testBytes, 0, testBytes.length);
+
+        int actual = Murmur3Hash.hash32(testBytes, 0, testBytes.length);
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    public void testMurmur3HashMask32SameOrientation() {
+        byte[] testData = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B};
+        byte[] testBytes = Arrays.copyOf(testData, 16);
         byte[] expectedBytes = Arrays.copyOf(testBytes, testBytes.length * 2);
         System.arraycopy(testBytes, 0, expectedBytes, testBytes.length, testBytes.length);
-        int testMask =  0x1f; // testBytes.length - 1;
+        int testMask =  0x0F;
 
-
-        // ToDo:
-        //  -- Remove the expected bytes out to a linear array.
-        // For each testLength from 1 to testBytes length
-        // For each offset,
-        //    -- test the arrays as they match
-        //    -- march the test array down and around the "ring" array  by 1 byte
-        //    -- compare for the full length of the testBytes
-//        for (int testLength = 1; testLength <= testBytes.length; testLength++) {
-            int testLength = 1;
-            System.out.printf("TestLength: %d -- Offsets: ", testLength);
-//            for (int offset = 0; offset <= testBytes.length - testLength; offset++) {
-            for (int offset = 0; offset <= testBytes.length - 1; offset++) {
+        for (int testLength = 1; testLength <= testData.length; testLength++) {
+            for (int offset = 0; offset <= testData.length /*- testLength*/; offset++) {
                 int expected = Murmur3Hash.hash32(expectedBytes, offset, testLength, defaultHazelcastMurmurSeed);
+                int expected2 = HashUtil.MurmurHash3_x86_32(expectedBytes, offset, testLength, defaultHazelcastMurmurSeed);
                 int actual = Murmur3Hash.hash32(testBytes, offset, testLength, testMask, defaultHazelcastMurmurSeed);
                 assertEquals("length: " + testLength + ", offset: " + offset, expected, actual);
-                System.out.printf("%d ", offset);
+                assertEquals("length: " + testLength + ", offset: " + offset, expected2, actual);
             }
-            System.out.println();
-        //}
+        }
+    }
+
+
+    @Test
+    public void testMurmur3HashMask32PartialSplitBuffer() {
+        byte[] testData = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B};
+        byte[] testBytes = new byte[16];
+        System.arraycopy(testData, 0, testBytes, 8, 8);
+        System.arraycopy(testData, 8, testBytes, 0, 4);
+        byte[] expectedBytes = Arrays.copyOf(testData, testBytes.length * 2);
+        System.arraycopy(testData, 0, expectedBytes, testBytes.length, testData.length);
+        int testMask =  0x0F;
+
+        testSplitBuffer(testData, testBytes, expectedBytes, testMask);
+    }
+
+    @Test
+    public void testMurmur3HashMask32FullSplitBuffer() {
+        byte[] testData = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F};
+        byte[] testBytes = new byte[16];
+        System.arraycopy(testData, 0, testBytes, 8, 8);
+        System.arraycopy(testData, 8, testBytes, 0, 8);
+        byte[] expectedBytes = Arrays.copyOf(testData, testBytes.length * 2);
+        System.arraycopy(testData, 0, expectedBytes, testBytes.length, testData.length);
+        int testMask =  0x0F;
+
+        testSplitBuffer(testData, testBytes, expectedBytes, testMask);
+    }
+
+
+    private void testSplitBuffer(byte[] testData, byte[] testBytes, byte[] expectedBytes, int testMask) {
+        for (int testLength = 1; testLength <= testData.length; testLength++) {
+            for (int offset = 0; offset <= testData.length /*- testLength*/; offset++) {
+                int expected = Murmur3Hash.hash32(expectedBytes, offset, testLength, defaultHazelcastMurmurSeed);
+                int expected2 = HashUtil.MurmurHash3_x86_32(expectedBytes, offset, testLength, defaultHazelcastMurmurSeed);
+                int actual = Murmur3Hash.hash32(testBytes, offset+8, testLength, testMask, defaultHazelcastMurmurSeed);
+                assertEquals("oci:length: " + testLength + ", offset: " + offset, expected, actual);
+                assertEquals("hz:length: " + testLength + ", offset: " + offset, expected2, actual);
+            }
+        }
     }
 }
