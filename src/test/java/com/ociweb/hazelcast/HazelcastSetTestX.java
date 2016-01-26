@@ -1,20 +1,16 @@
 package com.ociweb.hazelcast;
 
-import com.hazelcast.client.config.ClientConfig;
-import com.hazelcast.client.config.ClientNetworkConfig;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import com.ociweb.hazelcast.stage.HazelcastClient;
 import com.ociweb.hazelcast.stage.ResponseCallBack;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -23,7 +19,6 @@ import static org.junit.Assert.fail;
 public class HazelcastSetTestX {
 
     private static HazelcastInstance hazelcastInstance;
-    private HazelcastClientConfig config;
     private HazelcastClient client;
     private boolean goOn = false;
 
@@ -42,8 +37,8 @@ public class HazelcastSetTestX {
 
     @Test
     public void createSet() {
-        config = new HazelcastClientConfig("path to config");
-        client = new HazelcastClient(config, new SetTestCallBack());
+        // ToDo: Quit lying about the configuration file path.
+        client = new HazelcastClient("PathToConfigurationFile", new SetTestCallBack());
         int setSize = -1;
         int cid = 1;
 
@@ -53,7 +48,7 @@ public class HazelcastSetTestX {
         }
 
 
-        final int fstoken = client.newSet(client, cid, "FirstSet");
+        final int fstoken = client.getConfigurator().getSetToken(client, cid, "FirstSet");
         if (-1 == fstoken) {
             fail("Unable to get token, see log");
         }
@@ -73,18 +68,11 @@ public class HazelcastSetTestX {
         // Add a string, Must be serializable or identifiable serializable or portable..
 //        assertTrue(HazelcastSet.add(client, cid, fstoken, "MyStringValue"));
 
-        // Add a low level object, can be used for very tight serialization
-/*
-        DataOutputStream out = HazelcastSet.add(client, cid, fstoken);
-        out.writeLong(42);
-        out.close();
-*/
-
         //request the size and the callback will get the response
 //        assertTrue(HazelcastSet.size(client, cid, fstoken));
 
         try {
-            Thread.sleep(20000L);
+            Thread.sleep(2000L);
         } catch (InterruptedException ie) {
             // no big deal
         }
@@ -94,12 +82,14 @@ public class HazelcastSetTestX {
         @Override
         public void send(int correlationId, short type, short flags, int partitionId, HZDataInput dataSource) {
             // assert((short)0x000C = flags) : "flags are not start and end, actual values: " + flags);
-            System.err.println("SetTestX: callback");
-            System.err.println("correlationId: " + correlationId);
-            System.err.printf("type: 0x%X\n", type);
-            System.err.printf("flags: 0x%X\n", flags);
-            System.err.printf("paritionId: %d(0x%X)\n", partitionId, partitionId);
-            System.err.println("dataSource Length: " + dataSource.length());
+            System.err.println("SetTestX: successful callback received ");
+            System.err.println("cb correlationId: " + correlationId);
+            System.err.printf("cb type: 0x%X\n", type);
+            System.err.printf("cb flags: 0x%X\n", flags);
+            System.err.printf("cb paritionId: %d(0x%X)\n", partitionId, partitionId);
+            System.err.println("cb dataSource Length: " + dataSource.length());
+
+/*
             if (dataSource.length() > 0) {
                 try {
                     int partition = dataSource.readInt();
@@ -109,6 +99,7 @@ public class HazelcastSetTestX {
                     e.printStackTrace();
                 }
             }
+*/
 
             goOn = true;
         }

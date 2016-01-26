@@ -8,6 +8,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
+import com.ociweb.hazelcast.HazelcastConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,10 +60,10 @@ public class ConnectionStage extends PronghornStage {
     private LittleEndianDataInputBlobReader<RawDataSchema> reader;
 
     @SuppressWarnings("unchecked")
-    protected ConnectionStage(GraphManager graphManager,
-                              Pipe<RawDataSchema> input,
-                              Pipe<RequestResponseSchema> output,
-                              HazelcastConfigurator conf) {
+    public ConnectionStage(GraphManager graphManager,
+                           Pipe<RawDataSchema> input,
+                           Pipe<RequestResponseSchema> output,
+                           HazelcastConfigurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = new Pipe[]{output};
