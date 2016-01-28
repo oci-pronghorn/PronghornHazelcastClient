@@ -54,7 +54,7 @@ public class ConnectionStage extends PronghornStage {
     protected int authUUIDOwner = -1;
     protected StringBuilder authResponse = new StringBuilder(128);
 
-    //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStage
+    //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStages
     private PipeConfig<RawDataSchema> inputSocketPipeConfig;
     private Pipe<RawDataSchema> inputSocketPipe;
     private LittleEndianDataInputBlobReader<RawDataSchema> reader;

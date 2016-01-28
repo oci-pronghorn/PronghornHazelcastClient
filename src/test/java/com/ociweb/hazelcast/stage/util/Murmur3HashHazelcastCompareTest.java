@@ -30,6 +30,7 @@ public class Murmur3HashHazelcastCompareTest {
         assertEquals(expected, actual);
     }
 
+
     @Test
     public void testMurmur3HashMask32SameOrientation() {
         byte[] testData = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B};

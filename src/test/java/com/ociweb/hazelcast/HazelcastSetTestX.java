@@ -6,6 +6,7 @@ import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.ociweb.hazelcast.stage.ResponseCallBack;
+import com.ociweb.hazelcast.stage.util.MidAmble;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,25 +36,32 @@ public class HazelcastSetTestX {
         hazelcastInstance = Hazelcast.newHazelcastInstance(config);
     }
 
+    @AfterClass
+    public static void stopServer() {
+        hazelcastInstance.shutdown();
+    }
+
     @Test
     public void createSet() {
-        // ToDo: Quit lying about the configuration file path.
+        // ToDo: The placeholder name will change after Configuration from a file
+        // is implemented.
         client = new HazelcastClient("PathToConfigurationFile", new SetTestCallBack());
         int setSize = -1;
         int cid = 1;
 
+        // ToDo: Figure out a better way to give the server time to spin up before running.
         try {
             Thread.sleep(1000);
         } catch (InterruptedException ie) {
         }
 
 
-        final int fstoken = client.getConfigurator().getSetToken(client, cid, "FirstSet");
+        final int fstoken = HazelcastSet.createNewSet(client, cid, "FirstSet");
         if (-1 == fstoken) {
             fail("Unable to get token, see log");
         }
 
-        int ThatsEnoughForNow = 3;
+        int EnoughForNow = 3;
         int numberOfTimes = 0;
         while (!goOn) {
             try {
@@ -61,20 +69,22 @@ public class HazelcastSetTestX {
             } catch (InterruptedException ie) {
             }
             numberOfTimes++;
-            if (numberOfTimes == ThatsEnoughForNow) break;
+            if (numberOfTimes == EnoughForNow) break;
         }
         goOn = false;
 
-        // Add a string, Must be serializable or identifiable serializable or portable..
+        // ToDo: Waiting on implementation of partition hashing
+        // Add a string -- must be serializable or identifiable as serializable or portable.
 //        assertTrue(HazelcastSet.add(client, cid, fstoken, "MyStringValue"));
 
-        //request the size and the callback will get the response
+        // ToDo: Waiting on implementation of partition hashing
+        // Request the size. The callback will get the response.
 //        assertTrue(HazelcastSet.size(client, cid, fstoken));
 
         try {
             Thread.sleep(2000L);
         } catch (InterruptedException ie) {
-            // no big deal
+            // no big deal, just move on.
         }
     }
 
@@ -86,7 +96,7 @@ public class HazelcastSetTestX {
             System.err.println("cb correlationId: " + correlationId);
             System.err.printf("cb type: 0x%X\n", type);
             System.err.printf("cb flags: 0x%X\n", flags);
-            System.err.printf("cb paritionId: %d(0x%X)\n", partitionId, partitionId);
+            System.err.printf("cb partitionId: %d(0x%X)\n", partitionId, partitionId);
             System.err.println("cb dataSource Length: " + dataSource.length());
 
 /*
@@ -100,14 +110,7 @@ public class HazelcastSetTestX {
                 }
             }
 */
-
             goOn = true;
         }
     }
-
-    @AfterClass
-    public static void stopServer() {
-        hazelcastInstance.shutdown();
-    }
-
 }
