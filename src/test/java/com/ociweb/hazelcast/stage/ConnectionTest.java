@@ -3,10 +3,7 @@ package com.ociweb.hazelcast.stage;
 import java.util.concurrent.TimeUnit;
 
 import com.ociweb.hazelcast.HazelcastConfigurator;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
@@ -26,13 +23,13 @@ public class ConnectionTest {
 
 
     @BeforeClass
-    public static void statupClusterMember() {
+    public static void startupClusterMember() {
         Config config = new Config();
         config.getNetworkConfig().getJoin().getTcpIpConfig().addMember("127.0.0.1");
 
         memberInstance = Hazelcast.newHazelcastInstance(config);
 
-        if (0==memberInstance.getAtomicLong("MyLock").getAndIncrement()) {
+        if (0 == memberInstance.getAtomicLong("MyLock").getAndIncrement()) {
             System.out.println("Starting Connection Tets");
         }
     }
@@ -44,13 +41,12 @@ public class ConnectionTest {
     }
 
 
-
     @Test
     public void simpleAuthTest() {
         GraphManager gm = new GraphManager();
 
         PipeConfig<RawDataSchema> inputConfig = new PipeConfig(RawDataSchema.instance);
-        PipeConfig<RequestResponseSchema> outputConfig = new PipeConfig(RequestResponseSchema.instance);;
+        PipeConfig<RequestResponseSchema> outputConfig = new PipeConfig(RequestResponseSchema.instance);
 
         Pipe<RawDataSchema> input = new Pipe<>(inputConfig);
         Pipe<RequestResponseSchema> output = new Pipe<>(outputConfig);
@@ -58,24 +54,25 @@ public class ConnectionTest {
         HazelcastConfigurator conf = new HazelcastConfigurator();
         GeneratorStage gs = new GeneratorStage(gm, input, false);
         ConnectionStage cs = new TestConnectionStageWrapper(gm, input, output, conf, true); //shutdown is done here
-        GraphManager.addNota(gm,GraphManager.PRODUCER,GraphManager.PRODUCER, cs);//need to kill this quickly
+        GraphManager.addNota(gm, GraphManager.PRODUCER, GraphManager.PRODUCER, cs);//need to kill this quickly
 
         PipeCleanerStage pc = new PipeCleanerStage(gm, output);
 
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-        scheduler.awaitTermination(3000,TimeUnit.SECONDS);
+        scheduler.awaitTermination(3000, TimeUnit.SECONDS);
 
     }
 
 
     @Test
     public void simpleAuthAndPartitionRequestTest() {
+
         GraphManager gm = new GraphManager();
 
         PipeConfig<RawDataSchema> inputConfig = new PipeConfig(RawDataSchema.instance);
-        PipeConfig<RequestResponseSchema> outputConfig = new PipeConfig(RequestResponseSchema.instance);;
+        PipeConfig<RequestResponseSchema> outputConfig = new PipeConfig(RequestResponseSchema.instance);
 
         Pipe<RawDataSchema> input = new Pipe<>(inputConfig);
         Pipe<RequestResponseSchema> output = new Pipe<>(outputConfig);
@@ -89,15 +86,15 @@ public class ConnectionTest {
         ThreadPerStageScheduler scheduler = new ThreadPerStageScheduler(gm);
         scheduler.startup();
 
-
-        try {//this is time is a hack because I do not have a design yet to make this test exit exactly when the data shows up.
-            Thread.sleep(5_000);
+        //this is time is a hack because I do not have a design yet to make this test exit exactly when the data shows up.
+        try {
+            Thread.sleep(3_000);
         } catch (InterruptedException e) {
         }
 
         scheduler.shutdown();
 
-        scheduler.awaitTermination(60,TimeUnit.SECONDS);
+        scheduler.awaitTermination(60, TimeUnit.SECONDS);
 
     }
 
@@ -105,14 +102,13 @@ public class ConnectionTest {
     public class TestConnectionStageWrapper extends ConnectionStage {
 
         private final boolean shutDownAfterAuth;
-
         protected TestConnectionStageWrapper(GraphManager graphManager,
-                Pipe<RawDataSchema> input,
-                Pipe<RequestResponseSchema> output,
-                HazelcastConfigurator conf, boolean shutDownAfterAuth) {
-            super(graphManager,input,output,conf);
-            this.shutDownAfterAuth = shutDownAfterAuth;
+                                             Pipe<RawDataSchema> input,
+                                             Pipe<RequestResponseSchema> output,
+                                             HazelcastConfigurator conf, boolean shutDownAfterAuth) {
 
+            super(graphManager, input, output, conf);
+            this.shutDownAfterAuth = shutDownAfterAuth;
         }
 
         @Override
@@ -120,8 +116,8 @@ public class ConnectionTest {
             super.run();
 
             if (shutDownAfterAuth && isAuthenticated) {
-                Assert.assertTrue(authUUIDLen>10);
-                System.out.println("IP & GUID:"+authResponse);
+                Assert.assertTrue(authUUIDLen > 10);
+                System.out.println("IP & GUID:" + authResponse);
 
                 requestShutdown();
 
@@ -131,42 +127,41 @@ public class ConnectionTest {
     }
 
     public class GeneratorStage extends PronghornStage {
-
-        private boolean requestParitions;
+        private boolean requestPartitions;
         private Pipe<RawDataSchema> output;
 
-        protected GeneratorStage(GraphManager graphManager, Pipe<RawDataSchema> output, boolean requestParitions) {
+        protected GeneratorStage(GraphManager graphManager, Pipe<RawDataSchema> output, boolean requestPartitions) {
             super(graphManager, NONE, output);
-            GraphManager.addNota(graphManager,GraphManager.PRODUCER,GraphManager.PRODUCER, this);
+            GraphManager.addNota(graphManager, GraphManager.PRODUCER, GraphManager.PRODUCER, this);
             this.output = output;
             this.supportsBatchedPublish = false;
             this.supportsBatchedRelease = false;
-            this.requestParitions = requestParitions;
+            this.requestPartitions = requestPartitions;
         }
 
         @Override
         public void run() {
-
-            if (requestParitions) {
-
+            if (requestPartitions) {
                 byte[] request = new byte[128]; //this is all zeros so zero length is allready set
-                int messageType = 0x8;//request partitions
+                int messageType = 0x8; //request partitions
+                // Curious -- I'm not sure why this sleep is necessary, but I(cas) don't have time to track it down
+                // at the moment.  If I take this out, the cluster gets an NPE in OnData.  It may have something to
+                // do with the platform I'm testing on -- it shows up in the Cloudbee's build as well, though --,
+                // but a 3 second delay seems to provide enough time for the server -- or something -- to get set
+                // up enough to handle the partition request. Curious, indeed.
+                try {
+                    Thread.sleep(3_000);
+                } catch (InterruptedException ie) {
+                }
                 int len = ConnectionStage.writeHeader(request, 0, 42, -1, messageType);
-                request[0] = (byte)len;
+                request[0] = (byte) len;
 
                 Pipe.addMsgIdx(output, RawDataSchema.MSG_CHUNKEDSTREAM_1);
                 Pipe.addByteArray(request, 0, len, output);
+                System.err.println("ConnectionTest: send partition request");
                 Pipe.publishWrites(output);
-
-                System.out.println("send partition request");
-                requestParitions = false;
-
+                requestPartitions = false;
             }
-
-
         }
-
     }
-
-
 }
