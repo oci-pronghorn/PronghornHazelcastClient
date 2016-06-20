@@ -333,7 +333,7 @@ public class ConnectionStage extends PronghornStage {
     public void pumpByteChannelIntoRawDataPipe(ReadableByteChannel sourceChannel, Pipe<RawDataSchema> targetPipe) throws IOException {
         while (Pipe.hasRoomForWrite(targetPipe)) {
             
-            int originalBlobPosition = Pipe.bytesWorkingHeadPosition(targetPipe);
+            int originalBlobPosition = Pipe.getBlobWorkingHeadPosition(targetPipe);
             ByteBuffer targetByteBuffer = Pipe.wrappedBlobForWriting(originalBlobPosition, targetPipe);
             int len;//if data is read then we build a record around it
             if ((len = sourceChannel.read(targetByteBuffer))>0) {

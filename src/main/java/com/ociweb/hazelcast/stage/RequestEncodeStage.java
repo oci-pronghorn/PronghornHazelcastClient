@@ -144,7 +144,7 @@ public class RequestEncodeStage extends PronghornStage {
             long inputMsgId = inputFrom.fieldIdScript[msgIdx];
 
             //gather all the destination variables
-            int outputBytePos = Pipe.bytesWorkingHeadPosition(targetOutput);
+            int outputBytePos = Pipe.getBlobWorkingHeadPosition(targetOutput);
             final int startOutputBytePos = outputBytePos;
             byte[] outputByteBuffer = Pipe.byteBuffer(targetOutput);
             int outputByteMask = Pipe.blobMask(targetOutput);

@@ -1,8 +1,6 @@
 package com.ociweb.hazelcast.stage;
 
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import org.junit.AfterClass;
 import org.junit.Assert;

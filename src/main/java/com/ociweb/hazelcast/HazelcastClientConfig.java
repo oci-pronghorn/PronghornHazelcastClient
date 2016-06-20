@@ -8,11 +8,11 @@ public class HazelcastClientConfig {
 
     // TODO: Add a likely default candidate here
     Path configFilePath;
-    HazelcastClientConfig() {
+    public HazelcastClientConfig() {
          configFilePath = FileSystems.getDefault().getPath("~", ".hz", "configFile");
     }
 
-    HazelcastClientConfig(String pathname) {
+    public HazelcastClientConfig(String pathname) {
         configFilePath = FileSystems.getDefault().getPath(pathname);
     }
 

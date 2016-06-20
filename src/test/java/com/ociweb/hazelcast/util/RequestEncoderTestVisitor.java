@@ -50,7 +50,7 @@ public class RequestEncoderTestVisitor implements StreamingReadVisitor {
 	public void visitTemplateOpen(String name, long id) {
         // Beginning of message
 
-        bytePos = Pipe.bytesWorkingHeadPosition(output);
+        bytePos = Pipe.getBlobWorkingHeadPosition(output);
         startBytePos = bytePos;
         outBuffer = Pipe.byteBuffer(output);
         byteMask = Pipe.blobMask(output);
