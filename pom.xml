@@ -25,6 +25,7 @@
 	  		<artifactId>Pronghorn</artifactId>
 	  		<version>0.0.1-SNAPSHOT</version>
     	</dependency>
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
@@ -37,14 +38,12 @@
           <scope>runtime</scope>
         </dependency>
 
-		<dependency><!-- only here until we determine which classes/interfaces must be duplicated. -->
-			<groupId>com.hazelcast</groupId>
-			<artifactId>hazelcast-all</artifactId>
-			<version>3.5.1</version>
-<!---      <version>3.6-EA3</version> -->
-			<scope>test</scope>
-		</dependency>
-
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast-all</artifactId>
+            <version>3.5.1</version>
+            <scope>test</scope>
+        </dependency>
       	<dependency>
 		      <groupId>junit</groupId>
 		      <artifactId>junit</artifactId>

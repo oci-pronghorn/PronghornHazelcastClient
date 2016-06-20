@@ -246,8 +246,8 @@ public class ValidateTemplates {
                        target.append(tab).append(tab).append(writerName).append(".writeUTF8(pipe, 0x").append(Long.toHexString(loc)).append(", ");
                        appendValidJavaMethodName(target, from.fieldNameScript[idx]).append(");\n").append(tab);
                        break;
-                   case TypeMask.ByteArray:
-                   case TypeMask.ByteArrayOptional:
+                   case TypeMask.ByteVector:
+                   case TypeMask.ByteVectorOptional:
                        target.append(tab).append(tab).append(writerName).append(".writeBytes(pipe, 0x").append(Long.toHexString(loc)).append(", ");
                        appendValidJavaMethodName(target, from.fieldNameScript[idx]).append(");\n").append(tab);
                        break;

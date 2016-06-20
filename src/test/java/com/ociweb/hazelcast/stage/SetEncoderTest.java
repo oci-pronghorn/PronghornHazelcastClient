@@ -1,5 +1,6 @@
 package com.ociweb.hazelcast.stage;
 
+import com.ociweb.hazelcast.HazelcastConfigurator;
 import com.ociweb.hazelcast.util.EncoderTestGenerator;
 import com.ociweb.hazelcast.util.EncoderTestValidator;
 import com.ociweb.hazelcast.util.ExpectedEncoderMessageBuilder;
@@ -9,7 +10,6 @@ import com.ociweb.pronghorn.pipe.RawDataSchema;
 import com.ociweb.pronghorn.stage.monitor.MonitorConsoleStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 import com.ociweb.pronghorn.stage.scheduling.ThreadPerStageScheduler;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.concurrent.TimeUnit;

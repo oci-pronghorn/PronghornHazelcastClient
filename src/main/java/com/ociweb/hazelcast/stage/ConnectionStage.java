@@ -8,6 +8,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 
+import com.ociweb.hazelcast.HazelcastConfigurator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +44,7 @@ public class ConnectionStage extends PronghornStage {
     private SocketChannel channel;
     private ByteBuffer initializerData;
     private ByteBuffer pingData;
+    private ByteBuffer lengthData;
 
     private ByteBuffer[] pendingWriteBuffers;
 
@@ -52,16 +54,16 @@ public class ConnectionStage extends PronghornStage {
     protected int authUUIDOwner = -1;
     protected StringBuilder authResponse = new StringBuilder(128);
 
-    //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStage
+    //NOTE: in the future if this is a performance issue we can extract a routing stage out of this connectionStages
     private PipeConfig<RawDataSchema> inputSocketPipeConfig;
     private Pipe<RawDataSchema> inputSocketPipe;
     private LittleEndianDataInputBlobReader<RawDataSchema> reader;
 
     @SuppressWarnings("unchecked")
-    protected ConnectionStage(GraphManager graphManager,
-                              Pipe<RawDataSchema> input,
-                              Pipe<RequestResponseSchema> output,
-                              HazelcastConfigurator conf) {
+    public ConnectionStage(GraphManager graphManager,
+                           Pipe<RawDataSchema> input,
+                           Pipe<RequestResponseSchema> output,
+                           HazelcastConfigurator conf) {
         super(graphManager, input, output);
         this.inputMessagesToSend = input;
         this.outputMessagesReceived = new Pipe[]{output};
@@ -150,8 +152,9 @@ public class ConnectionStage extends PronghornStage {
         pingData = ByteBuffer.allocate(1);
         pingData.put((byte) 0xF);
 
-        allocateIncomingBuffer();
+        lengthData = ByteBuffer.allocate(4);
 
+        allocateIncomingBuffer();
     }
 
 
@@ -272,18 +275,30 @@ public class ConnectionStage extends PronghornStage {
                     int msgIdx = Pipe.takeMsgIdx(inputMessagesToSend);
                     int meta = Pipe.takeRingByteMetaData(inputMessagesToSend); //for string and byte array
                     int len = Pipe.takeRingByteLen(inputMessagesToSend);
-                    if (len<18) {
+/*                    if (len < 18) {
                         throw new UnsupportedOperationException("Error there are no messages smaller than the 18 byte header and we got "+len);
                     }
                     pendingWriteBuffers[0] = Pipe.wrappedBlobReadingRingA(inputMessagesToSend, meta, len);
-                    
+
                     pendingWriteBuffers[1] = Pipe.wrappedBlobReadingRingB(inputMessagesToSend, meta, len);
                     pendingWriteBuffers[2] = null;
-                            
+ */
+                    int vli = len + 4;
+                    lengthData.clear(); //TODO: once we measure performance if this stage is holding things up we can move this back to the encoder stage.
+                    lengthData.put((byte) (0xFF & vli));
+                    lengthData.put((byte) (0xFF & (vli >> 8)));
+                    lengthData.put((byte) (0xFF & (vli >> 16)));
+                    lengthData.put((byte) (0xFF & (vli >> 24)));
+                    lengthData.flip();
+
+                    pendingWriteBuffers[0] = lengthData;
+                    pendingWriteBuffers[1] = Pipe.wrappedBlobReadingRingA(inputMessagesToSend, meta, len);
+                    pendingWriteBuffers[2] = Pipe.wrappedBlobReadingRingB(inputMessagesToSend, meta, len);
+
                     if (!nonBlockingByteBufferWrite(now)) {
                         exitReason = 4;
                         break;
-                    } 
+                    }
 
                     Pipe.confirmLowLevelRead(inputMessagesToSend, Pipe.sizeOf(inputMessagesToSend, msgIdx));
                     Pipe.releaseReadLock(inputMessagesToSend);
@@ -296,20 +311,20 @@ public class ConnectionStage extends PronghornStage {
             exitReason = 6;
         }
     }
-        
+
     private void readDataFromConnection() {
-        
-        
+
+
         try {
             //continues to run while there is room and the channel has data
             pumpByteChannelIntoRawDataPipe(channel, inputSocketPipe); //Move as part of the new WebServer
-                        
+
             //accum data on to the reader stream, enables the crossing of message boundaries.
             LittleEndianDataInputBlobReader.appendNextFieldToReader(reader, inputSocketPipe);
-        
+
             //now consume the frames off the ring in blocks larger than how we wrote it.
             consumeFrameIfPresent(inputSocketPipe, reader);
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -324,7 +339,7 @@ public class ConnectionStage extends PronghornStage {
             if (pipeIdx < 0) {
                 return;//do nothing, can not find pipe
             }
-      
+
             consumeFrameFromReader(pipeIdx);
             Pipe.releasePendingAsReadLock(targetPipe, frameByteCount);
         }
@@ -332,16 +347,16 @@ public class ConnectionStage extends PronghornStage {
 
     public void pumpByteChannelIntoRawDataPipe(ReadableByteChannel sourceChannel, Pipe<RawDataSchema> targetPipe) throws IOException {
         while (Pipe.hasRoomForWrite(targetPipe)) {
-            
+
             int originalBlobPosition = Pipe.getBlobWorkingHeadPosition(targetPipe);
             ByteBuffer targetByteBuffer = Pipe.wrappedBlobForWriting(originalBlobPosition, targetPipe);
             int len;//if data is read then we build a record around it
             if ((len = sourceChannel.read(targetByteBuffer))>0) {
                 int size = Pipe.addMsgIdx(targetPipe,RawDataSchema.MSG_CHUNKEDSTREAM_1);
-                Pipe.moveBlobPointerAndRecordPosAndLength(originalBlobPosition, len, targetPipe);  
-                
+                Pipe.moveBlobPointerAndRecordPosAndLength(originalBlobPosition, len, targetPipe);
+
                 Pipe.confirmLowLevelWrite(targetPipe, size);
-                Pipe.publishWrites(targetPipe);    
+                Pipe.publishWrites(targetPipe);
             } else {
                 //if nothing was read then the channel is empty, try again later.
                 break;
@@ -385,7 +400,7 @@ public class ConnectionStage extends PronghornStage {
                     authUUIDOwner = LittleEndianDataInputBlobReader.readUTF(reader, authResponse, reader.readInt());
 
                     isAuthenticated = true;
-                    
+
                     break;
 
                 // TODO: Add support for Ping response here
@@ -510,7 +525,6 @@ public class ConnectionStage extends PronghornStage {
     }
 
     private boolean nonBlockingByteBufferWrite(long now) {
-
         for (int i = 0; i < pendingWriteBuffers.length; i++) {
             if (null != pendingWriteBuffers[i] && pendingWriteBuffers[i].hasRemaining()) {
                 try {
@@ -518,9 +532,9 @@ public class ConnectionStage extends PronghornStage {
                         touched = now;
                     }
                     if (0 == pendingWriteBuffers[i].remaining()) {
-                        pendingWriteBuffers[i] = null;                        
+                        pendingWriteBuffers[i] = null;
                     } else {
-                        System.out.println("finsih later with "+ pendingWriteBuffers[i].remaining());
+                        System.out.println("ConnectionStage.nonBlockingByteBufferWrite: finish later with "+ pendingWriteBuffers[i].remaining());
                         //finish later
                         return false;
                     }
@@ -529,7 +543,7 @@ public class ConnectionStage extends PronghornStage {
                         e.printStackTrace();
                         //TODO: what to do on failure.
                     }
-                    System.out.println("error and unable to send");
+                    System.out.println("ConnectionStage.nonBlockingByteBufferWrite: Error and unable to send");
                     return false;
                 }
             }

@@ -3,9 +3,8 @@ package com.ociweb.hazelcast.stage;
 import java.io.IOException;
 
 import com.ociweb.hazelcast.HZDataInput;
-import com.ociweb.pronghorn.pipe.LittleEndianDataInputBlobReader;
+import com.ociweb.hazelcast.HazelcastConfigurator;
 import com.ociweb.pronghorn.pipe.Pipe;
-import com.ociweb.pronghorn.pipe.RawDataSchema;
 import com.ociweb.pronghorn.stage.PronghornStage;
 import com.ociweb.pronghorn.stage.scheduling.GraphManager;
 
@@ -22,10 +21,8 @@ public class RequestDecodeStage extends PronghornStage {
     private Pipe<RequestResponseSchema>[] inputFromConnection;
     private HZDataInput[] readers;
     private static final int msgSize = RequestResponseSchema.FROM.fragDataSize[RequestResponseSchema.MSG_RESPONSE_1];
-
     private static final int BEGIN_FLAG = 128;
     private static final int END_FLAG = 64;
-
 
     private final ResponseCallBack callBack;
 
@@ -72,7 +69,6 @@ public class RequestDecodeStage extends PronghornStage {
                 c += readFromPipe(inputFromConnection[j], readers[j]);
             }
         } while (c > 0);//keep going until we find that no pipes have any data
-
     }
 
     private int readFromPipe(Pipe<RequestResponseSchema> pipe, HZDataInput reader) {
@@ -85,12 +81,6 @@ public class RequestDecodeStage extends PronghornStage {
             int typeFlags = Pipe.takeValue(pipe);
             int correlationId = Pipe.takeValue(pipe);
             int partitionId = Pipe.takeValue(pipe);
-/*
-            System.out.printf("Decoder: msgIdx: 0x%X\n", msgIdx);
-            System.out.printf("Decoder: typeFlags: 0x%X\n", typeFlags);
-            System.out.printf("Decoder: correlationId: 0x%X\n", correlationId);
-            System.out.printf("Decoder: partitionId: 0x%X\n", partitionId);
-*/
 
             if (0 != (BEGIN_FLAG & typeFlags)) {
                 reader.openLowLevelAPIField();
@@ -101,15 +91,11 @@ public class RequestDecodeStage extends PronghornStage {
             Pipe.confirmLowLevelRead(pipe, msgSize);
             Pipe.readNextWithoutReleasingReadLock(pipe);
 
-            System.out.println("Decoder is checking end flag callback has content to read from pipe.");
             if (0 != (END_FLAG & typeFlags)) {
-                System.out.println("Decoder is calling callback has content to read from pipe.");
                 callBack.send(correlationId, (short) (typeFlags >> 16), (short) ((BEGIN_FLAG | END_FLAG) | (0x3F & typeFlags)), partitionId, reader);
                 Pipe.releaseAllPendingReadLock(pipe);
-
             }
         }
-
         return c;
     }
 

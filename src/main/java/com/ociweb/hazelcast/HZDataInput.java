@@ -11,14 +11,14 @@ import com.ociweb.pronghorn.pipe.Pipe;
 
 public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponseSchema> implements ObjectDataInput, Data {
 
-    
+
     public HZDataInput(Pipe<RequestResponseSchema> pipe) {
         super(pipe);
     }
 
     @Override
     public byte[] readByteArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             byte[] b = new byte[len];
@@ -26,12 +26,12 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return b;
         }
         return new byte[0];
-        
+
     }
 
     @Override
     public char[] readCharArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             char[] values = new char[len];
@@ -41,12 +41,12 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return values;
         }
         return new char[0];
-        
+
     }
 
     @Override
     public int[] readIntArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             int[] values = new int[len];
@@ -56,12 +56,12 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return values;
         }
         return new int[0];
-        
+
     }
 
     @Override
     public long[] readLongArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             long[] values = new long[len];
@@ -71,12 +71,12 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return values;
         }
         return new long[0];
-        
+
     }
 
     @Override
     public double[] readDoubleArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             double[] values = new double[len];
@@ -86,12 +86,12 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return values;
         }
         return new double[0];
-        
+
     }
 
     @Override
     public float[] readFloatArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             float[] values = new float[len];
@@ -101,12 +101,12 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return values;
         }
         return new float[0];
-        
+
     }
 
     @Override
     public short[] readShortArray() throws IOException {
-        
+
         int len = readInt();
         if (len > 0) {
             short[] values = new short[len];
@@ -116,7 +116,7 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
             return values;
         }
         return new short[0];
-        
+
     }
 
     @Override
@@ -168,13 +168,13 @@ public class HZDataInput extends LittleEndianDataInputBlobReader<RequestResponse
         return length();
     }
 
-    //For Data interface 
+    //For Data interface
     @Override
     public int getPartitionHash() {
         return hashCode(); //because we return false from hasPartitionHash()
     }
 
-    //For Data interface 
+    //For Data interface
     @Override
     public boolean hasPartitionHash() {
         return false;
