@@ -84,7 +84,7 @@ public class RequestEncodeStage extends PronghornStage {
         int i = outputs.length;
         indexedOutputs = new Pipe[i];
         while (--i >= 0) {
-            indexedOutputs[config.getHashKeyForRingId(outputs[i].ringId)] = outputs[i];
+            indexedOutputs[config.getHashKeyForRingId(outputs[i].id)] = outputs[i];
         }
         // TODO(cas): This is where the modValue will be set to reflect the number of machines in the cluster.
     }
